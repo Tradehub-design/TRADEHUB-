@@ -47,4 +47,4 @@ columns_to_show = [
 
 available_columns = [col for col in columns_to_show if col in df.columns]
 
-st.dataframe(df[available_columns], use_container_width=True)
+st.table(df[available_columns])
