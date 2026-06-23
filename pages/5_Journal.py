@@ -11,8 +11,11 @@ supabase = get_supabase_client()
 if supabase is None:
     st.stop()
 
-response = supabase.table("trades").select("*").execute()
-df = prepare_trades_dataframe(response.data)
+trade_response = supabase.table("trades").select("*").execute()
+screenshot_response = supabase.table("trade_screenshots").select("*").execute()
+
+df = prepare_trades_dataframe(trade_response.data)
+screenshots = screenshot_response.data
 
 if df.empty:
     st.info("No trades found yet.")
@@ -24,4 +27,11 @@ df = trade_filters(df)
 st.subheader("Trade Cards")
 
 for _, trade in df.iterrows():
-    show_trade_card(trade.to_dict())
+    ticket = trade["ticket"]
+
+    trade_screenshots = [
+        shot for shot in screenshots
+        if shot.get("ticket") == ticket
+    ]
+
+    show_trade_card(trade.to_dict(), trade_screenshots)
