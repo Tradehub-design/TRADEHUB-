@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from utils.supabase_client import get_supabase_client
 from utils.analytics_utils import prepare_trades_dataframe, summary_stats
+from dashboard.filter_panel import account_filter, trade_filters
 
 st.title("📈 Trades")
 
@@ -14,6 +15,9 @@ response = supabase.table("trades").select("*").execute()
 data = response.data
 
 df = prepare_trades_dataframe(data)
+
+df, selected_account = account_filter(df)
+df = trade_filters(df)
 
 if df.empty:
     st.info("No trades found yet.")
