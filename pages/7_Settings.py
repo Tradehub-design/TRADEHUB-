@@ -8,7 +8,7 @@ supabase = get_supabase_client()
 if supabase is None:
     st.stop()
 
-st.subheader("Add Funded Account Rules")
+st.subheader("Add / Update Funded Rules")
 
 accounts_response = supabase.table("accounts").select("*").execute()
 accounts = accounts_response.data
@@ -21,7 +21,6 @@ account_options = [a["account_number"] for a in accounts]
 
 with st.form("funded_rules_form"):
     account_number = st.selectbox("Account", account_options)
-
     starting_balance = st.number_input("Starting Balance", min_value=0.0)
     max_daily_loss = st.number_input("Max Daily Loss", min_value=0.0)
     max_total_loss = st.number_input("Max Total Loss", min_value=0.0)
