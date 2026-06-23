@@ -35,6 +35,6 @@ st.write(f"Losing trades: {len(losing_trades)}")
 st.write(f"Winning trades: {len(winning_trades)}")
 
 if "symbol" in df.columns:
-    st.write("Worst symbols by P/L:")
     worst_symbols = df.groupby("symbol")["net_profit"].sum().sort_values().head(5)
+    st.write("Worst symbols by P/L:")
     st.dataframe(worst_symbols)
