@@ -8,10 +8,10 @@ supabase = get_supabase_client()
 if supabase is None:
     st.stop()
 
-st.subheader("Add MT5 Account")
+st.subheader("Add / Update Account")
 
-with st.form("add_account"):
-    account_number = st.text_input("Account Number")
+with st.form("account_form"):
+    account_number = st.text_input("MT5 Account Number")
     account_name = st.text_input("Account Name")
     broker = st.text_input("Broker", value="Fusion Markets")
     platform = st.text_input("Platform", value="MT5")
@@ -21,8 +21,9 @@ with st.form("add_account"):
     )
     currency = st.selectbox("Currency", ["AUD", "USD", "GBP", "EUR"])
     starting_balance = st.number_input("Starting Balance", min_value=0.0)
+    current_balance = st.number_input("Current Balance", min_value=0.0)
 
-    submitted = st.form_submit_button("Add Account")
+    submitted = st.form_submit_button("Save Account")
 
     if submitted:
         if not account_number:
@@ -36,10 +37,10 @@ with st.form("add_account"):
                 "account_type": account_type,
                 "currency": currency,
                 "starting_balance": starting_balance,
-                "current_balance": starting_balance
+                "current_balance": current_balance
             }).execute()
 
-            st.success("Account added successfully.")
+            st.success("Account saved.")
 
 st.divider()
 
