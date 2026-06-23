@@ -1,1 +1,6 @@
- 
+streamlit
+pandas
+plotly
+supabase
+python-dotenv
+MetaTrader5
