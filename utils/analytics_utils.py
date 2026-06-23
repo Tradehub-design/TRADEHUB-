@@ -16,6 +16,15 @@ def prepare_trades_dataframe(data):
     return df
 
 
+def prepare_reviews_dataframe(data):
+    df = pd.DataFrame(data)
+
+    if df.empty:
+        return df
+
+    return df
+
+
 def summary_stats(df):
     if df.empty:
         return {
