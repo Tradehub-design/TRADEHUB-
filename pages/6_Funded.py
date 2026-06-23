@@ -1,9 +1,18 @@
 import streamlit as st
+from utils.supabase_client import get_supabase_client
+from dashboard.funded_tracker import show_funded_tracker
 
 st.title("💰 Funded Accounts")
 
-st.write("Daily Drawdown")
-st.write("Max Drawdown")
-st.write("Profit Target")
-st.write("Trading Days")
-st.write("Consistency Rule")
+supabase = get_supabase_client()
+
+if supabase is None:
+    st.stop()
+
+accounts_response = supabase.table("accounts").select("*").execute()
+rules_response = supabase.table("funded_rules").select("*").execute()
+
+accounts = accounts_response.data
+rules = rules_response.data
+
+show_funded_tracker(accounts, rules)
