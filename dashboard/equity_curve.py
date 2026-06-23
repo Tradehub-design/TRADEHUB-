@@ -1,6 +1,4 @@
 import streamlit as st
-import plotly.express as px
-
 
 def show_equity_curve(df):
     st.subheader("📈 Equity Curve")
@@ -9,14 +7,9 @@ def show_equity_curve(df):
         st.info("No trades available.")
         return
 
-    df = df.sort_values("trade_date").copy()
-    df["cumulative_profit"] = df["net_profit"].cumsum()
+    equity_df = df.sort_values("trade_date").copy()
+    equity_df["cumulative_profit"] = equity_df["net_profit"].cumsum()
 
-    fig = px.line(
-        df,
-        x="trade_date",
-        y="cumulative_profit",
-        title="Equity Curve"
-    )
+    chart_df = equity_df.set_index("trade_date")[["cumulative_profit"]]
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.line_chart(chart_df)
