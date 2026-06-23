@@ -1,26 +1,22 @@
 import streamlit as st
-import pandas as pd
 import plotly.express as px
-from utils.supabase_client import get_supabase_client
 
-st.subheader("📈 Equity Curve")
 
-supabase = get_supabase_client()
+def show_equity_curve(df):
+    st.subheader("📈 Equity Curve")
 
-response = supabase.table("trades").select("*").execute()
+    if df.empty:
+        st.info("No trades available.")
+        return
 
-if response.data:
+    df = df.sort_values("trade_date").copy()
+    df["cumulative_profit"] = df["net_profit"].cumsum()
 
-    df = pd.DataFrame(response.data)
+    fig = px.line(
+        df,
+        x="trade_date",
+        y="cumulative_profit",
+        title="Equity Curve"
+    )
 
-    if "profit" in df.columns:
-
-        df["cumulative_profit"] = df["profit"].cumsum()
-
-        fig = px.line(
-            df,
-            y="cumulative_profit",
-            title="Equity Curve"
-        )
-
-        st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
