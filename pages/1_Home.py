@@ -3,6 +3,8 @@ from utils.supabase_client import get_supabase_client
 from utils.analytics_utils import prepare_trades_dataframe, summary_stats
 from dashboard.dashboard_summary import show_dashboard_summary
 from dashboard.equity_curve import show_equity_curve
+from dashboard.drawdown_analysis import show_drawdown_analysis
+from dashboard.account_analysis import show_account_analysis
 
 st.title("🏠 TradeHub Dashboard")
 
@@ -25,3 +27,11 @@ show_dashboard_summary(stats)
 st.divider()
 
 show_equity_curve(df)
+
+st.divider()
+
+show_drawdown_analysis(df)
+
+st.divider()
+
+show_account_analysis(df)
