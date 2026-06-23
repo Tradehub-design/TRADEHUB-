@@ -3,6 +3,7 @@ import pandas as pd
 from utils.supabase_client import get_supabase_client
 from utils.analytics_utils import prepare_trades_dataframe
 from utils.calendar_utils import daily_trade_summary
+from dashboard.calendar_heatmap import show_calendar_heatmap
 
 st.title("📅 Calendar")
 
@@ -21,6 +22,8 @@ if df.empty:
     st.stop()
 
 daily = daily_trade_summary(df)
+
+show_calendar_heatmap(daily)
 
 st.subheader("Daily Summary")
 st.dataframe(daily, use_container_width=True)
