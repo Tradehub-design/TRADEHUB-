@@ -6,7 +6,22 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("TradeHub")
-st.write("MT5 → Supabase → Trading Dashboard")
+st.title("📈 TradeHub")
 
-st.success("App structure is ready.")
+st.write(
+    """
+    Welcome to TradeHub.
+
+    Use the sidebar to navigate between:
+
+    • Home
+    • Calendar
+    • Trades
+    • Analytics
+    • Journal
+    • Funded
+    • Settings
+    • AI Coach
+    • Accounts
+    """
+)
