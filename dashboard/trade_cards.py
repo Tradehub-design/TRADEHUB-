@@ -1,7 +1,9 @@
 import streamlit as st
 
 
-def show_trade_card(trade):
+def show_trade_card(trade, screenshots=None):
+    screenshots = screenshots or []
+
     direction = trade.get("direction", "")
     symbol = trade.get("symbol", "")
     pnl = trade.get("net_profit", 0)
@@ -38,3 +40,15 @@ def show_trade_card(trade):
 
         if notes:
             st.info(notes)
+
+        if screenshots:
+            st.write("**Screenshots**")
+            cols = st.columns(min(len(screenshots), 3))
+
+            for i, shot in enumerate(screenshots):
+                image_url = shot.get("image_url")
+                caption = shot.get("caption") or shot.get("timeframe") or "Screenshot"
+
+                if image_url:
+                    with cols[i % len(cols)]:
+                        st.image(image_url, caption=caption, use_container_width=True)
