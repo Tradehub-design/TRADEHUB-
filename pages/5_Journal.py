@@ -24,8 +24,6 @@ if df.empty:
 df, selected_account = account_filter(df)
 df = trade_filters(df)
 
-st.subheader("Trade Cards")
-
 for _, trade in df.iterrows():
     ticket = trade["ticket"]
 
