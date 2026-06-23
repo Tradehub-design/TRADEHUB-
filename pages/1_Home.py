@@ -1,6 +1,7 @@
 import streamlit as st
 from utils.supabase_client import get_supabase_client
 from utils.analytics_utils import prepare_trades_dataframe, summary_stats
+from dashboard.equity_curve import show_equity_curve
 
 st.title("🏠 Home")
 
@@ -35,7 +36,7 @@ with col4:
 
 st.divider()
 
-st.write("📈 Equity Curve Coming Soon")
+show_equity_curve(df)
 st.write("📅 Calendar Heatmap Coming Soon")
 st.write("🔥 Best Setups Coming Soon")
 st.write("⚠️ Drawdown Analysis Coming Soon")
