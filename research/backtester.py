@@ -1,29 +1,31 @@
 import pandas as pd
 
 
-def analyse_follow_through(df, signal_col, direction, lookahead=5):
-    results = []
+class ResearchBacktester:
 
-    for i in range(len(df) - lookahead):
-        if not df.iloc[i][signal_col]:
-            continue
+    @staticmethod
+    def follow_through(df, signal, direction, candles=5):
+        output = []
 
-        entry_close = df.iloc[i]["close_price"]
-        future = df.iloc[i + 1:i + 1 + lookahead]
+        for i in range(len(df) - candles):
+            if not bool(df.iloc[i][signal]):
+                continue
 
-        if direction == "bullish":
-            max_follow = future["high_price"].max() - entry_close
-            max_adverse = entry_close - future["low_price"].min()
-        else:
-            max_follow = entry_close - future["low_price"].min()
-            max_adverse = future["high_price"].max() - entry_close
+            close = df.iloc[i]["close_price"]
+            future = df.iloc[i + 1:i + candles + 1]
 
-        results.append({
-            "candle_time": df.iloc[i]["candle_time"],
-            "entry_close": entry_close,
-            "max_follow_through": max_follow,
-            "max_adverse_move": max_adverse,
-            "worked": max_follow > max_adverse,
-        })
+            if direction == "bullish":
+                follow = future["high_price"].max() - close
+                adverse = close - future["low_price"].min()
+            else:
+                follow = close - future["low_price"].min()
+                adverse = future["high_price"].max() - close
 
-    return pd.DataFrame(results)
+            output.append({
+                "time": df.iloc[i]["candle_time"],
+                "worked": follow > adverse,
+                "follow": follow,
+                "adverse": adverse,
+            })
+
+        return pd.DataFrame(output)
