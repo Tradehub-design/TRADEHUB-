@@ -19,19 +19,15 @@ def page_header(title, subtitle=""):
     )
 
 
-def card(content):
+def section_title(title):
     st.markdown(
-        f"""
-        <div class="tradehub-card">
-            {content}
-        </div>
-        """,
+        f'<div class="section-title">{title}</div>',
         unsafe_allow_html=True
     )
 
 
 def metric_card(label, value, status="neutral"):
-    css_class = {
+    status_class = {
         "positive": "metric-positive",
         "negative": "metric-negative",
         "neutral": "metric-neutral",
@@ -40,8 +36,20 @@ def metric_card(label, value, status="neutral"):
     st.markdown(
         f"""
         <div class="tradehub-card">
-            <div style="color:#A1A1AA;font-size:13px;">{label}</div>
-            <div class="{css_class}" style="font-size:24px;">{value}</div>
+            <div class="metric-label">{label}</div>
+            <div class="metric-value {status_class}">{value}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+def info_card(title, body):
+    st.markdown(
+        f"""
+        <div class="tradehub-card">
+            <div style="font-size:17px;font-weight:800;margin-bottom:8px;">{title}</div>
+            <div style="color:#A1A1AA;font-size:14px;line-height:1.5;">{body}</div>
         </div>
         """,
         unsafe_allow_html=True
