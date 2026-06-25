@@ -51,48 +51,22 @@ for _, trade in trades_df.iterrows():
     label = f"{trade.get('ticket')} | {trade.get('symbol')} | {trade.get('direction')} | {trade.get('net_profit')}"
     trade_options.append((label, trade.to_dict()))
 
-selected_label = st.selectbox(
-    "Trade",
-    [item[0] for item in trade_options]
-)
+selected_label = st.selectbox("Trade", [item[0] for item in trade_options])
 
-selected_trade = next(
-    item[1] for item in trade_options
-    if item[0] == selected_label
-)
+selected_trade = next(item[1] for item in trade_options if item[0] == selected_label)
 
 ticket = selected_trade.get("ticket")
 account_number = selected_trade.get("account_number")
 net_profit = selected_trade.get("net_profit") or 0
 
 stat_row([
-    {
-        "label": "Symbol",
-        "value": selected_trade.get("symbol", "-"),
-        "helper": "Instrument",
-        "status": "neutral",
-    },
-    {
-        "label": "Net Profit",
-        "value": net_profit,
-        "helper": "Closed result",
-        "status": "positive" if net_profit >= 0 else "negative",
-    },
+    {"label": "Symbol", "value": selected_trade.get("symbol", "-"), "helper": "Instrument", "status": "neutral"},
+    {"label": "Net Profit", "value": net_profit, "helper": "Closed result", "status": "positive" if net_profit >= 0 else "negative"},
 ])
 
 stat_row([
-    {
-        "label": "Direction",
-        "value": selected_trade.get("direction", "-"),
-        "helper": "Buy / Sell",
-        "status": "neutral",
-    },
-    {
-        "label": "Session",
-        "value": selected_trade.get("session", "-"),
-        "helper": "Trading session",
-        "status": "neutral",
-    },
+    {"label": "Direction", "value": selected_trade.get("direction", "-"), "helper": "Buy / Sell", "status": "neutral"},
+    {"label": "Session", "value": selected_trade.get("session", "-"), "helper": "Trading session", "status": "neutral"},
 ])
 
 st.divider()
@@ -105,38 +79,17 @@ for playbook in playbooks:
     playbook_options[playbook["name"]] = playbook["id"]
 
 with st.form("trade_review_form"):
-    playbook_name = st.selectbox(
-        "Playbook Used",
-        list(playbook_options.keys())
-    )
-
+    playbook_name = st.selectbox("Playbook Used", list(playbook_options.keys()))
     playbook_id = playbook_options[playbook_name]
 
     col1, col2 = st.columns(2)
 
     with col1:
-        total_rules = st.number_input(
-            "Total Rules",
-            min_value=0,
-            value=5,
-            step=1
-        )
-
-        rules_followed = st.number_input(
-            "Rules Followed",
-            min_value=0,
-            value=5,
-            step=1
-        )
+        total_rules = st.number_input("Total Rules", min_value=0, value=5, step=1)
+        rules_followed = st.number_input("Rules Followed", min_value=0, value=5, step=1)
 
     with col2:
-        confidence_score = st.slider(
-            "Confidence Score",
-            0,
-            10,
-            7
-        )
-
+        confidence_score = st.slider("Confidence Score", 0, 10, 7)
         mistake_type = st.selectbox(
             "Mistake Type",
             [
@@ -157,40 +110,16 @@ with st.form("trade_review_form"):
 
     emotion_before = st.selectbox(
         "Emotion Before Trade",
-        [
-            "Calm",
-            "Confident",
-            "Neutral",
-            "FOMO",
-            "Frustrated",
-            "Tired",
-            "Revenge",
-            "Anxious",
-        ]
+        ["Calm", "Confident", "Neutral", "FOMO", "Frustrated", "Tired", "Revenge", "Anxious"]
     )
 
     emotion_after = st.selectbox(
         "Emotion After Trade",
-        [
-            "Calm",
-            "Happy",
-            "Neutral",
-            "Frustrated",
-            "Regretful",
-            "Overconfident",
-            "Anxious",
-        ]
+        ["Calm", "Happy", "Neutral", "Frustrated", "Regretful", "Overconfident", "Anxious"]
     )
 
-    lesson_learned = st.text_area(
-        "Lesson Learned",
-        placeholder="What did this trade teach you?"
-    )
-
-    journal_notes = st.text_area(
-        "Journal Notes",
-        placeholder="Describe the setup, entry, exit and your thought process."
-    )
+    lesson_learned = st.text_area("Lesson Learned", placeholder="What did this trade teach you?")
+    journal_notes = st.text_area("Journal Notes", placeholder="Describe the setup, entry, exit and your thought process.")
 
     submitted = st.form_submit_button("Save Review")
 
