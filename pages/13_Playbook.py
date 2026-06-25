@@ -21,46 +21,19 @@ section("Create New Playbook")
 
 with st.form("create_playbook_form"):
     name = st.text_input("Playbook Name", placeholder="Example: A+ London Liquidity Sweep")
-
-    description = st.text_area(
-        "Description",
-        placeholder="Describe when this setup should be used."
-    )
+    description = st.text_area("Description", placeholder="Describe when this setup should be used.")
 
     col1, col2 = st.columns(2)
 
     with col1:
-        market = st.selectbox(
-            "Market",
-            ["Forex", "Gold", "Crypto", "Indices", "Stocks", "Other"]
-        )
-
-        timeframe = st.selectbox(
-            "Primary Timeframe",
-            ["1M", "5M", "15M", "30M", "1H", "4H", "1D", "1W"]
-        )
+        market = st.selectbox("Market", ["Forex", "Gold", "Crypto", "Indices", "Stocks", "Other"])
+        timeframe = st.selectbox("Primary Timeframe", ["1M", "5M", "15M", "30M", "1H", "4H", "1D", "1W"])
 
     with col2:
-        ideal_session = st.selectbox(
-            "Ideal Session",
-            ["Asia", "London", "New York", "Any"]
-        )
+        ideal_session = st.selectbox("Ideal Session", ["Asia", "London", "New York", "Any"])
+        risk_percent = st.number_input("Risk %", min_value=0.0, max_value=10.0, value=0.5, step=0.1)
 
-        risk_percent = st.number_input(
-            "Risk %",
-            min_value=0.0,
-            max_value=10.0,
-            value=0.5,
-            step=0.1
-        )
-
-    target_rr = st.number_input(
-        "Target R:R",
-        min_value=0.0,
-        max_value=20.0,
-        value=2.0,
-        step=0.1
-    )
+    target_rr = st.number_input("Target R:R", min_value=0.0, max_value=20.0, value=2.0, step=0.1)
 
     submitted = st.form_submit_button("Create Playbook")
 
@@ -77,7 +50,6 @@ with st.form("create_playbook_form"):
                 risk_percent,
                 target_rr
             )
-
             supabase.table("playbooks").insert(payload).execute()
             st.success("Playbook created successfully.")
 
@@ -97,7 +69,7 @@ playbooks = playbook_response.data
 if not playbooks:
     command_card(
         "No playbooks yet",
-        "Create your first playbook above. This will become the foundation for your trade reviews and AI scoring.",
+        "Create your first playbook above. This becomes the foundation for trade reviews and AI scoring.",
         "Example: A+ London Sweep, 4H Continuation, Gold Reversal."
     )
     st.stop()
@@ -110,42 +82,19 @@ for playbook in playbooks:
     )
 
     stat_row([
-        {
-            "label": "Timeframe",
-            "value": playbook.get("timeframe") or "-",
-            "helper": "Primary timeframe",
-            "status": "neutral",
-        },
-        {
-            "label": "Session",
-            "value": playbook.get("ideal_session") or "-",
-            "helper": "Ideal trading window",
-            "status": "neutral",
-        },
+        {"label": "Timeframe", "value": playbook.get("timeframe") or "-", "helper": "Primary timeframe", "status": "neutral"},
+        {"label": "Session", "value": playbook.get("ideal_session") or "-", "helper": "Ideal window", "status": "neutral"},
     ])
 
     stat_row([
-        {
-            "label": "Risk %",
-            "value": playbook.get("risk_percent") or 0,
-            "helper": "Recommended risk",
-            "status": "neutral",
-        },
-        {
-            "label": "Target RR",
-            "value": playbook.get("target_rr") or 0,
-            "helper": "Expected reward",
-            "status": "positive",
-        },
+        {"label": "Risk %", "value": playbook.get("risk_percent") or 0, "helper": "Recommended risk", "status": "neutral"},
+        {"label": "Target RR", "value": playbook.get("target_rr") or 0, "helper": "Expected reward", "status": "positive"},
     ])
 
     with st.expander("Add Rules"):
         with st.form(f"rule_form_{playbook['id']}"):
             rule_text = st.text_input("Rule", placeholder="Example: Must sweep previous high/low")
-            rule_type = st.selectbox(
-                "Rule Type",
-                ["Entry", "Exit", "Risk", "Session", "Psychology", "Confirmation", "Other"]
-            )
+            rule_type = st.selectbox("Rule Type", ["Entry", "Exit", "Risk", "Session", "Psychology", "Confirmation", "Other"])
             is_required = st.checkbox("Required Rule", value=True)
 
             rule_submitted = st.form_submit_button("Add Rule")
@@ -160,7 +109,6 @@ for playbook in playbooks:
                         rule_type,
                         is_required
                     )
-
                     supabase.table("playbook_rules").insert(rule_payload).execute()
                     st.success("Rule added.")
 
@@ -177,8 +125,6 @@ for playbook in playbooks:
         st.write("Rules")
         for rule in rules:
             required = "Required" if rule.get("is_required") else "Optional"
-            st.markdown(
-                f"- **{rule.get('rule_type')}**: {rule.get('rule_text')} _({required})_"
-            )
+            st.markdown(f"- **{rule.get('rule_type')}**: {rule.get('rule_text')} _({required})_")
 
     st.divider()
