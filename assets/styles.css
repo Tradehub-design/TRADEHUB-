@@ -1,45 +1,84 @@
-/* TradeHub Global Styling */
+/* TradeHub Premium UI */
 
 .block-container {
-    padding-top: 1.2rem;
+    padding-top: 1rem;
     padding-bottom: 2rem;
-    max-width: 1200px;
+    max-width: 1180px;
 }
 
-/* Page Header */
-.tradehub-title {
-    font-size: 30px;
-    font-weight: 900;
-    margin-bottom: 4px;
-    letter-spacing: -0.5px;
+/* Hide Streamlit clutter */
+#MainMenu {
+    visibility: hidden;
 }
 
-.tradehub-subtitle {
-    color: #A1A1AA;
-    font-size: 14px;
-    margin-bottom: 24px;
+footer {
+    visibility: hidden;
 }
 
-/* Cards */
-.tradehub-card {
-    background: linear-gradient(145deg, #171B26, #111827);
+header {
+    visibility: hidden;
+}
+
+/* Hero */
+.hero-card {
+    background: radial-gradient(circle at top left, #2B246B 0%, #151827 36%, #0E1117 100%);
     border: 1px solid #2A3040;
-    border-radius: 20px;
-    padding: 18px;
-    margin-bottom: 16px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border-radius: 26px;
+    padding: 26px 22px;
+    margin-bottom: 22px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
 }
 
-/* Metric Cards */
+.hero-title {
+    font-size: 34px;
+    font-weight: 950;
+    letter-spacing: -1px;
+    color: #FFFFFF;
+    margin-bottom: 8px;
+}
+
+.hero-subtitle {
+    font-size: 15px;
+    color: #A1A1AA;
+    line-height: 1.5;
+}
+
+/* Sections */
+.section-title {
+    font-size: 22px;
+    font-weight: 900;
+    margin-top: 18px;
+    margin-bottom: 12px;
+    color: #FFFFFF;
+}
+
+/* Metric cards */
+.metric-card {
+    background: linear-gradient(145deg, #171B26, #10131E);
+    border: 1px solid #2A3040;
+    border-radius: 22px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+}
+
 .metric-label {
     color: #A1A1AA;
     font-size: 13px;
-    margin-bottom: 6px;
+    font-weight: 600;
+    margin-bottom: 8px;
 }
 
 .metric-value {
-    font-size: 26px;
-    font-weight: 900;
+    font-size: 32px;
+    font-weight: 950;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+}
+
+.metric-helper {
+    color: #71717A;
+    font-size: 12px;
 }
 
 .metric-positive {
@@ -54,38 +93,99 @@
     color: #F4F4F5;
 }
 
+/* Insight */
+.insight-card {
+    background: linear-gradient(145deg, rgba(124, 92, 255, 0.22), rgba(23, 27, 38, 0.95));
+    border: 1px solid rgba(124, 92, 255, 0.35);
+    border-radius: 24px;
+    padding: 22px;
+    margin-bottom: 18px;
+    box-shadow: 0 14px 36px rgba(124, 92, 255, 0.12);
+}
+
+.insight-title {
+    font-size: 18px;
+    font-weight: 900;
+    margin-bottom: 8px;
+    color: #FFFFFF;
+}
+
+.insight-body {
+    color: #D4D4D8;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Glass cards */
+.glass-card {
+    background: rgba(23, 27, 38, 0.72);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 20px;
+    margin-bottom: 16px;
+    backdrop-filter: blur(12px);
+}
+
+.glass-title {
+    font-size: 17px;
+    font-weight: 850;
+    color: #FFFFFF;
+    margin-bottom: 8px;
+}
+
+.glass-body {
+    color: #A1A1AA;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
 /* Badges */
 .badge {
     display: inline-block;
-    background: #252B3A;
+    background: rgba(124, 92, 255, 0.16);
+    border: 1px solid rgba(124, 92, 255, 0.35);
     color: #C4B5FD;
-    padding: 5px 11px;
+    padding: 6px 12px;
     border-radius: 999px;
     font-size: 12px;
+    font-weight: 700;
     margin-right: 6px;
     margin-bottom: 6px;
 }
 
-/* Section headings */
-.section-title {
-    font-size: 20px;
+/* Streamlit widgets polish */
+.stButton > button {
+    border-radius: 14px;
+    border: 1px solid #2A3040;
+    background: #7C5CFF;
+    color: white;
     font-weight: 800;
-    margin-top: 18px;
-    margin-bottom: 10px;
+    padding: 0.65rem 1rem;
 }
 
-/* Mobile polish */
+.stButton > button:hover {
+    border-color: #A78BFA;
+    background: #6D4CFF;
+    color: white;
+}
+
+/* Mobile */
 @media only screen and (max-width: 768px) {
-    .tradehub-title {
-        font-size: 24px;
+    .hero-title {
+        font-size: 28px;
+    }
+
+    .hero-card {
+        padding: 22px 18px;
+        border-radius: 22px;
     }
 
     .metric-value {
-        font-size: 22px;
+        font-size: 28px;
     }
 
-    .tradehub-card {
-        padding: 15px;
-        border-radius: 16px;
+    .metric-card {
+        padding: 18px;
+        border-radius: 20px;
     }
 }
