@@ -7,6 +7,8 @@ from research.patterns import CandlePatterns
 from research.backtester import ResearchBacktester
 from research.statistics import ResearchStats
 from research.storage import CandleStorage
+from research.pattern_engine import PatternEngine
+from research.pattern_registry import PATTERN_REGISTRY
 
 st.title("🧪 Research Lab")
 
