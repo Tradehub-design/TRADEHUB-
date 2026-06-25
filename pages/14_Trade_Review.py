@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 
 from utils.supabase_client import get_supabase_client
 from utils.analytics_utils import prepare_trades_dataframe
@@ -11,7 +10,7 @@ load_css()
 
 app_header(
     "📔 Trade Review",
-    "Review each trade, connect it to your playbook, score discipline and record lessons."
+    "Connect trades to your playbook, score discipline, record mistakes and build better habits."
 )
 
 supabase = get_supabase_client()
@@ -19,8 +18,19 @@ supabase = get_supabase_client()
 if supabase is None:
     st.stop()
 
-trade_response = supabase.table("trades").select("*").order("trade_date", desc=True).execute()
-playbook_response = supabase.table("playbooks").select("*").execute()
+trade_response = (
+    supabase.table("trades")
+    .select("*")
+    .order("trade_date", desc=True)
+    .execute()
+)
+
+playbook_response = (
+    supabase.table("playbooks")
+    .select("*")
+    .order("created_at", desc=True)
+    .execute()
+)
 
 trades_df = prepare_trades_dataframe(trade_response.data)
 playbooks = playbook_response.data
@@ -29,7 +39,7 @@ if trades_df.empty:
     command_card(
         "No trades available",
         "Import trades first before creating journal reviews.",
-        "Go to Import or Accounts to add trade data."
+        "Go to Import to add trade data."
     )
     st.stop()
 
@@ -47,11 +57,13 @@ selected_label = st.selectbox(
 )
 
 selected_trade = next(
-    item[1] for item in trade_options if item[0] == selected_label
+    item[1] for item in trade_options
+    if item[0] == selected_label
 )
 
 ticket = selected_trade.get("ticket")
 account_number = selected_trade.get("account_number")
+net_profit = selected_trade.get("net_profit") or 0
 
 stat_row([
     {
@@ -62,9 +74,9 @@ stat_row([
     },
     {
         "label": "Net Profit",
-        "value": selected_trade.get("net_profit", 0),
+        "value": net_profit,
         "helper": "Closed result",
-        "status": "positive" if selected_trade.get("net_profit", 0) >= 0 else "negative",
+        "status": "positive" if net_profit >= 0 else "negative",
     },
 ])
 
@@ -177,7 +189,7 @@ with st.form("trade_review_form"):
 
     journal_notes = st.text_area(
         "Journal Notes",
-        placeholder="Describe your reasoning, entry, exit, and what you noticed."
+        placeholder="Describe the setup, entry, exit and your thought process."
     )
 
     submitted = st.form_submit_button("Save Review")
@@ -224,8 +236,8 @@ reviews = review_response.data
 if not reviews:
     command_card(
         "No review yet",
-        "Complete the form above to create your first structured trade review.",
-        "This will later power your AI Coach and Edge Score."
+        "Complete the form above to create a structured trade review.",
+        "This will power your AI Coach, psychology analytics and Edge Score."
     )
 else:
     review = reviews[0]
@@ -249,6 +261,12 @@ else:
             "status": "neutral" if review.get("mistake_type") == "None" else "negative",
         },
     ])
+
+    command_card(
+        "🤖 AI Review Preview",
+        JournalEngine.ai_style_summary(review),
+        "This will become a full AI review later."
+    )
 
     st.write("Lesson Learned")
     st.info(review.get("lesson_learned") or "No lesson recorded.")
