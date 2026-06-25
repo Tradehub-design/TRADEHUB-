@@ -1,1 +1,49 @@
+.block-container {
+    padding-top: 1.5rem;
+    padding-bottom: 2rem;
+}
 
+.tradehub-card {
+    background: #171B26;
+    border: 1px solid #2A3040;
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 16px;
+}
+
+.tradehub-title {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.tradehub-subtitle {
+    color: #A1A1AA;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.metric-positive {
+    color: #22C55E;
+    font-weight: 700;
+}
+
+.metric-negative {
+    color: #EF4444;
+    font-weight: 700;
+}
+
+.metric-neutral {
+    color: #F4F4F5;
+    font-weight: 700;
+}
+
+.badge {
+    display: inline-block;
+    background: #252B3A;
+    color: #C4B5FD;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    margin-right: 6px;
+}
