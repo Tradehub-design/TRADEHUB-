@@ -126,20 +126,37 @@ st.dataframe(df.head(20), use_container_width=True)
 
 st.divider()
 
-st.subheader("Liquidity Sweep Research")
+st.subheader("Pattern Research")
 
-sweep_df = CandlePatterns.liquidity_sweeps(df)
+pattern_name = st.selectbox(
+    "Choose Pattern",
+    PatternEngine.get_available_patterns()
+)
+
+pattern_info = PATTERN_REGISTRY.get(pattern_name, {})
+
+st.write(pattern_info.get("description", ""))
+
+pattern_df = PatternEngine.run_pattern(
+    df,
+    pattern_name,
+    {"body_threshold": body_threshold},
+    CandlePatterns
+)
+
+bullish_signal = pattern_info.get("bullish_signal")
+bearish_signal = pattern_info.get("bearish_signal")
 
 bullish_results = ResearchBacktester.follow_through(
-    sweep_df,
-    "bullish_sweep",
+    pattern_df,
+    bullish_signal,
     "bullish",
     lookahead
 )
 
 bearish_results = ResearchBacktester.follow_through(
-    sweep_df,
-    "bearish_sweep",
+    pattern_df,
+    bearish_signal,
     "bearish",
     lookahead
 )
@@ -147,55 +164,17 @@ bearish_results = ResearchBacktester.follow_through(
 col1, col2 = st.columns(2)
 
 col1.metric(
-    "Bullish Sweep Success",
+    "Bullish Success",
     f"{ResearchStats.success_rate(bullish_results)}%"
 )
 
 col2.metric(
-    "Bearish Sweep Success",
+    "Bearish Success",
     f"{ResearchStats.success_rate(bearish_results)}%"
 )
 
-st.write("Bullish sweep results")
+st.write("Bullish results")
 st.dataframe(bullish_results.head(20), use_container_width=True)
 
-st.write("Bearish sweep results")
+st.write("Bearish results")
 st.dataframe(bearish_results.head(20), use_container_width=True)
-
-st.divider()
-
-st.subheader("Continuation Candle Research")
-
-cont_df = CandlePatterns.continuation(df, body_threshold)
-
-bull_cont_results = ResearchBacktester.follow_through(
-    cont_df,
-    "bullish",
-    "bullish",
-    lookahead
-)
-
-bear_cont_results = ResearchBacktester.follow_through(
-    cont_df,
-    "bearish",
-    "bearish",
-    lookahead
-)
-
-col3, col4 = st.columns(2)
-
-col3.metric(
-    "Bullish Continuation Success",
-    f"{ResearchStats.success_rate(bull_cont_results)}%"
-)
-
-col4.metric(
-    "Bearish Continuation Success",
-    f"{ResearchStats.success_rate(bear_cont_results)}%"
-)
-
-st.write("Bullish continuation results")
-st.dataframe(bull_cont_results.head(20), use_container_width=True)
-
-st.write("Bearish continuation results")
-st.dataframe(bear_cont_results.head(20), use_container_width=True)
