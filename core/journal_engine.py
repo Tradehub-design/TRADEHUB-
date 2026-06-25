@@ -4,7 +4,6 @@ class JournalEngine:
     def calculate_rule_score(rules_followed, total_rules):
         if not total_rules:
             return 0
-
         return round((rules_followed / total_rules) * 100, 2)
 
     @staticmethod
@@ -18,16 +17,12 @@ class JournalEngine:
 
         if rule_score >= 90 and confidence_score >= 8:
             return "A+"
-
         if rule_score >= 80:
             return "A"
-
         if rule_score >= 65:
             return "B"
-
         if rule_score >= 50:
             return "C"
-
         return "F"
 
     @staticmethod
@@ -44,16 +39,8 @@ class JournalEngine:
         lesson_learned,
         journal_notes
     ):
-        rule_score = JournalEngine.calculate_rule_score(
-            rules_followed,
-            total_rules
-        )
-
-        trade_grade = JournalEngine.grade_trade(
-            rule_score,
-            confidence_score,
-            mistake_type
-        )
+        rule_score = JournalEngine.calculate_rule_score(rules_followed, total_rules)
+        trade_grade = JournalEngine.grade_trade(rule_score, confidence_score, mistake_type)
 
         return {
             "trade_ticket": trade_ticket,
