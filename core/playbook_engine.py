@@ -31,8 +31,7 @@ class PlaybookEngine:
         }
 
     @staticmethod
-    def calculate_rule_score(total_rules, rules_followed):
-        if total_rules == 0:
+    def rule_score(rules_followed, total_rules):
+        if not total_rules:
             return 0
-
         return round((rules_followed / total_rules) * 100, 2)
