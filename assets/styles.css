@@ -9,8 +9,6 @@
     padding-bottom:2rem;
 }
 
-/* Hide Streamlit branding */
-
 #MainMenu{
     visibility:hidden;
 }
@@ -19,14 +17,9 @@ footer{
     visibility:hidden;
 }
 
-header{
-    visibility:hidden;
-}
-
-/* ================= HERO ================= */
+/* DO NOT hide header - it contains sidebar toggle */
 
 .hero-card{
-
     background:
     radial-gradient(circle at top left,
     #5B4BFF 0%,
@@ -34,250 +27,142 @@ header{
     #121726 100%);
 
     border-radius:28px;
-
     padding:28px;
-
     margin-bottom:24px;
-
     border:1px solid rgba(255,255,255,.06);
-
-    box-shadow:
-    0 18px 40px rgba(0,0,0,.35);
-
+    box-shadow:0 18px 40px rgba(0,0,0,.35);
 }
 
 .hero-title{
-
     font-size:34px;
-
     font-weight:900;
-
     color:white;
-
     margin-bottom:8px;
-
 }
 
 .hero-subtitle{
-
     color:#B5B8C6;
-
     font-size:15px;
-
 }
-
-/* ================= SECTION ================= */
 
 .section-title{
-
     font-size:22px;
-
     font-weight:800;
-
     margin-top:20px;
-
     margin-bottom:14px;
-
 }
 
-/* ================= METRIC ================= */
-
 .metric-card{
-
     background:#181E2D;
-
     border-radius:22px;
-
     padding:18px;
-
     border:1px solid #2B3245;
-
     margin-bottom:15px;
-
 }
 
 .metric-label{
-
     color:#A4A8B7;
-
     font-size:13px;
-
 }
 
 .metric-value{
-
     font-size:30px;
-
     font-weight:900;
-
     margin-top:6px;
-
 }
 
 .metric-helper{
-
     color:#777;
-
     font-size:12px;
-
     margin-top:8px;
-
 }
 
 .metric-positive{
-
     color:#30D158;
-
 }
 
 .metric-negative{
-
     color:#FF453A;
-
 }
 
 .metric-neutral{
-
     color:white;
-
 }
 
-/* ================= INSIGHT ================= */
-
 .insight-card{
-
     background:linear-gradient(
         135deg,
         rgba(91,75,255,.35),
         rgba(30,35,52,.95)
     );
-
     border-radius:24px;
-
     padding:24px;
-
     border:1px solid rgba(91,75,255,.30);
-
     margin-bottom:20px;
-
 }
 
 .insight-title{
-
     font-size:18px;
-
     font-weight:800;
-
     color:white;
-
     margin-bottom:10px;
-
 }
 
 .insight-body{
-
     color:#D8DBE5;
-
     line-height:1.6;
-
 }
-
-/* ================= BADGE ================= */
 
 .badge{
-
     display:inline-block;
-
     padding:6px 12px;
-
     border-radius:999px;
-
     background:#272D42;
-
     color:#CFC7FF;
-
     font-size:12px;
-
     font-weight:700;
-
     margin-right:6px;
-
     margin-bottom:6px;
-
 }
 
-/* ================= BUTTONS ================= */
-
 .stButton>button{
-
     width:100%;
-
     border-radius:16px;
-
     border:none;
-
     background:#5B4BFF;
-
     color:white;
-
     font-weight:700;
-
     height:48px;
-
     transition:.25s;
-
 }
 
 .stButton>button:hover{
-
     background:#7064FF;
-
 }
 
-/* ================= INPUTS ================= */
-
 .stTextInput input{
-
     border-radius:14px;
-
 }
 
 .stSelectbox{
-
     border-radius:14px;
-
 }
-
-/* ================= DATAFRAME ================= */
 
 [data-testid="stDataFrame"]{
-
     border-radius:18px;
-
     overflow:hidden;
-
 }
-
-/* ================= MOBILE ================= */
 
 @media(max-width:768px){
+    .hero-title{
+        font-size:28px;
+    }
 
-.hero-title{
+    .metric-value{
+        font-size:26px;
+    }
 
-font-size:28px;
-
-}
-
-.metric-value{
-
-font-size:26px;
-
-}
-
-.hero-card{
-
-padding:22px;
-
-}
-
+    .hero-card{
+        padding:22px;
+    }
 }
