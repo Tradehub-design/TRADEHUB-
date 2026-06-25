@@ -10,9 +10,11 @@ class JournalEngine:
     @staticmethod
     def grade_trade(rule_score, confidence_score, mistake_type):
         if mistake_type and mistake_type != "None":
-            if rule_score >= 80:
+            if rule_score >= 80 and confidence_score >= 7:
                 return "B"
-            return "C"
+            if rule_score >= 60:
+                return "C"
+            return "F"
 
         if rule_score >= 90 and confidence_score >= 8:
             return "A+"
@@ -68,3 +70,18 @@ class JournalEngine:
             "lesson_learned": lesson_learned,
             "journal_notes": journal_notes,
         }
+
+    @staticmethod
+    def ai_style_summary(review):
+        grade = review.get("trade_grade")
+        score = review.get("rule_score")
+        mistake = review.get("mistake_type")
+        confidence = review.get("confidence_score")
+
+        if grade in ["A+", "A"]:
+            return f"Strong execution. Rule score was {score}% with confidence {confidence}/10."
+
+        if mistake and mistake != "None":
+            return f"Main issue detected: {mistake}. Review whether this mistake appears repeatedly."
+
+        return f"This trade needs review. Rule score was {score}%. Focus on improving checklist discipline."
