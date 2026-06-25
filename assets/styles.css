@@ -1,191 +1,283 @@
-/* TradeHub Premium UI */
+/* ============================================================
+   TRADEHUB PREMIUM DESIGN SYSTEM
+   Version 1.0
+============================================================ */
 
-.block-container {
-    padding-top: 1rem;
-    padding-bottom: 2rem;
-    max-width: 1180px;
+.block-container{
+    max-width:1400px;
+    padding-top:1rem;
+    padding-bottom:2rem;
 }
 
-/* Hide Streamlit clutter */
-#MainMenu {
-    visibility: hidden;
+/* Hide Streamlit branding */
+
+#MainMenu{
+    visibility:hidden;
 }
 
-footer {
-    visibility: hidden;
+footer{
+    visibility:hidden;
 }
 
-header {
-    visibility: hidden;
+header{
+    visibility:hidden;
 }
 
-/* Hero */
-.hero-card {
-    background: radial-gradient(circle at top left, #2B246B 0%, #151827 36%, #0E1117 100%);
-    border: 1px solid #2A3040;
-    border-radius: 26px;
-    padding: 26px 22px;
-    margin-bottom: 22px;
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+/* ================= HERO ================= */
+
+.hero-card{
+
+    background:
+    radial-gradient(circle at top left,
+    #5B4BFF 0%,
+    #252A48 28%,
+    #121726 100%);
+
+    border-radius:28px;
+
+    padding:28px;
+
+    margin-bottom:24px;
+
+    border:1px solid rgba(255,255,255,.06);
+
+    box-shadow:
+    0 18px 40px rgba(0,0,0,.35);
+
 }
 
-.hero-title {
-    font-size: 34px;
-    font-weight: 950;
-    letter-spacing: -1px;
-    color: #FFFFFF;
-    margin-bottom: 8px;
+.hero-title{
+
+    font-size:34px;
+
+    font-weight:900;
+
+    color:white;
+
+    margin-bottom:8px;
+
 }
 
-.hero-subtitle {
-    font-size: 15px;
-    color: #A1A1AA;
-    line-height: 1.5;
+.hero-subtitle{
+
+    color:#B5B8C6;
+
+    font-size:15px;
+
 }
 
-/* Sections */
-.section-title {
-    font-size: 22px;
-    font-weight: 900;
-    margin-top: 18px;
-    margin-bottom: 12px;
-    color: #FFFFFF;
+/* ================= SECTION ================= */
+
+.section-title{
+
+    font-size:22px;
+
+    font-weight:800;
+
+    margin-top:20px;
+
+    margin-bottom:14px;
+
 }
 
-/* Metric cards */
-.metric-card {
-    background: linear-gradient(145deg, #171B26, #10131E);
-    border: 1px solid #2A3040;
-    border-radius: 22px;
-    padding: 20px;
-    margin-bottom: 16px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+/* ================= METRIC ================= */
+
+.metric-card{
+
+    background:#181E2D;
+
+    border-radius:22px;
+
+    padding:18px;
+
+    border:1px solid #2B3245;
+
+    margin-bottom:15px;
+
 }
 
-.metric-label {
-    color: #A1A1AA;
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 8px;
+.metric-label{
+
+    color:#A4A8B7;
+
+    font-size:13px;
+
 }
 
-.metric-value {
-    font-size: 32px;
-    font-weight: 950;
-    letter-spacing: -0.5px;
-    margin-bottom: 4px;
+.metric-value{
+
+    font-size:30px;
+
+    font-weight:900;
+
+    margin-top:6px;
+
 }
 
-.metric-helper {
-    color: #71717A;
-    font-size: 12px;
+.metric-helper{
+
+    color:#777;
+
+    font-size:12px;
+
+    margin-top:8px;
+
 }
 
-.metric-positive {
-    color: #22C55E;
+.metric-positive{
+
+    color:#30D158;
+
 }
 
-.metric-negative {
-    color: #EF4444;
+.metric-negative{
+
+    color:#FF453A;
+
 }
 
-.metric-neutral {
-    color: #F4F4F5;
+.metric-neutral{
+
+    color:white;
+
 }
 
-/* Insight */
-.insight-card {
-    background: linear-gradient(145deg, rgba(124, 92, 255, 0.22), rgba(23, 27, 38, 0.95));
-    border: 1px solid rgba(124, 92, 255, 0.35);
-    border-radius: 24px;
-    padding: 22px;
-    margin-bottom: 18px;
-    box-shadow: 0 14px 36px rgba(124, 92, 255, 0.12);
+/* ================= INSIGHT ================= */
+
+.insight-card{
+
+    background:linear-gradient(
+        135deg,
+        rgba(91,75,255,.35),
+        rgba(30,35,52,.95)
+    );
+
+    border-radius:24px;
+
+    padding:24px;
+
+    border:1px solid rgba(91,75,255,.30);
+
+    margin-bottom:20px;
+
 }
 
-.insight-title {
-    font-size: 18px;
-    font-weight: 900;
-    margin-bottom: 8px;
-    color: #FFFFFF;
+.insight-title{
+
+    font-size:18px;
+
+    font-weight:800;
+
+    color:white;
+
+    margin-bottom:10px;
+
 }
 
-.insight-body {
-    color: #D4D4D8;
-    font-size: 14px;
-    line-height: 1.6;
+.insight-body{
+
+    color:#D8DBE5;
+
+    line-height:1.6;
+
 }
 
-/* Glass cards */
-.glass-card {
-    background: rgba(23, 27, 38, 0.72);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 24px;
-    padding: 20px;
-    margin-bottom: 16px;
-    backdrop-filter: blur(12px);
+/* ================= BADGE ================= */
+
+.badge{
+
+    display:inline-block;
+
+    padding:6px 12px;
+
+    border-radius:999px;
+
+    background:#272D42;
+
+    color:#CFC7FF;
+
+    font-size:12px;
+
+    font-weight:700;
+
+    margin-right:6px;
+
+    margin-bottom:6px;
+
 }
 
-.glass-title {
-    font-size: 17px;
-    font-weight: 850;
-    color: #FFFFFF;
-    margin-bottom: 8px;
+/* ================= BUTTONS ================= */
+
+.stButton>button{
+
+    width:100%;
+
+    border-radius:16px;
+
+    border:none;
+
+    background:#5B4BFF;
+
+    color:white;
+
+    font-weight:700;
+
+    height:48px;
+
+    transition:.25s;
+
 }
 
-.glass-body {
-    color: #A1A1AA;
-    font-size: 14px;
-    line-height: 1.5;
+.stButton>button:hover{
+
+    background:#7064FF;
+
 }
 
-/* Badges */
-.badge {
-    display: inline-block;
-    background: rgba(124, 92, 255, 0.16);
-    border: 1px solid rgba(124, 92, 255, 0.35);
-    color: #C4B5FD;
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 700;
-    margin-right: 6px;
-    margin-bottom: 6px;
+/* ================= INPUTS ================= */
+
+.stTextInput input{
+
+    border-radius:14px;
+
 }
 
-/* Streamlit widgets polish */
-.stButton > button {
-    border-radius: 14px;
-    border: 1px solid #2A3040;
-    background: #7C5CFF;
-    color: white;
-    font-weight: 800;
-    padding: 0.65rem 1rem;
+.stSelectbox{
+
+    border-radius:14px;
+
 }
 
-.stButton > button:hover {
-    border-color: #A78BFA;
-    background: #6D4CFF;
-    color: white;
+/* ================= DATAFRAME ================= */
+
+[data-testid="stDataFrame"]{
+
+    border-radius:18px;
+
+    overflow:hidden;
+
 }
 
-/* Mobile */
-@media only screen and (max-width: 768px) {
-    .hero-title {
-        font-size: 28px;
-    }
+/* ================= MOBILE ================= */
 
-    .hero-card {
-        padding: 22px 18px;
-        border-radius: 22px;
-    }
+@media(max-width:768px){
 
-    .metric-value {
-        font-size: 28px;
-    }
+.hero-title{
 
-    .metric-card {
-        padding: 18px;
-        border-radius: 20px;
-    }
+font-size:28px;
+
+}
+
+.metric-value{
+
+font-size:26px;
+
+}
+
+.hero-card{
+
+padding:22px;
+
+}
+
 }
