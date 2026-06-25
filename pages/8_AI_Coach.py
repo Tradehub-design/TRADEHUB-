@@ -1,40 +1,87 @@
 import streamlit as st
+import pandas as pd
+
 from utils.supabase_client import get_supabase_client
 from utils.analytics_utils import prepare_trades_dataframe
+from core.ui import load_css, app_header, section
+from core.components import command_card, stat_row
+from core.ai_coach_engine import AICoachEngine
 
-st.title("🤖 AI Coach")
+load_css()
+
+app_header(
+    "🤖 AI Coach",
+    "Your personal trading coach powered by your trades, journal reviews and playbook discipline."
+)
 
 supabase = get_supabase_client()
 
 if supabase is None:
     st.stop()
 
-response = supabase.table("trades").select("*").execute()
-df = prepare_trades_dataframe(response.data)
+trade_response = supabase.table("trades").select("*").execute()
+review_response = supabase.table("trade_journal_reviews").select("*").execute()
+
+df = prepare_trades_dataframe(trade_response.data)
+reviews = pd.DataFrame(review_response.data)
 
 if df.empty:
-    st.info("No trades found yet.")
+    command_card(
+        "No trades found",
+        "Import trades first so your AI Coach can analyse your performance.",
+        "The more trades you journal, the smarter this page becomes."
+    )
     st.stop()
 
-question = st.text_area(
-    "Ask TradeHub about your trading",
-    placeholder="Example: Why am I losing on Gold? Which session performs best?"
+summary = AICoachEngine.generate_summary(df, reviews)
+
+section("Coach Summary")
+
+command_card(
+    "Today’s Trading Insight",
+    summary["main_message"],
+    summary["suggested_focus"]
 )
 
-if st.button("Analyze"):
-    st.info("AI analysis will be added later.")
+section("Performance Diagnosis")
 
-st.divider()
+stat_row([
+    {"label": "Best Symbol", "value": summary["best_symbol"], "helper": "Highest net profit", "status": "positive"},
+    {"label": "Worst Symbol", "value": summary["worst_symbol"], "helper": "Lowest net profit", "status": "negative"},
+])
 
-st.subheader("Quick Insights")
+stat_row([
+    {"label": "Best Session", "value": summary["best_session"], "helper": "Highest net profit", "status": "positive"},
+    {"label": "Worst Session", "value": summary["worst_session"], "helper": "Lowest net profit", "status": "negative"},
+])
 
-losing_trades = df[df["net_profit"] < 0]
-winning_trades = df[df["net_profit"] > 0]
+section("Discipline & Mistakes")
 
-st.write(f"Losing trades: {len(losing_trades)}")
-st.write(f"Winning trades: {len(winning_trades)}")
+stat_row([
+    {
+        "label": "Discipline Score",
+        "value": f"{summary['discipline_score']}%",
+        "helper": "Average journal rule score",
+        "status": "positive" if summary["discipline_score"] >= 80 else "negative",
+    },
+    {
+        "label": "Most Common Mistake",
+        "value": summary["most_common_mistake"],
+        "helper": "From trade reviews",
+        "status": "negative",
+    },
+])
 
-if "symbol" in df.columns:
-    worst_symbols = df.groupby("symbol")["net_profit"].sum().sort_values().head(5)
-    st.write("Worst symbols by P/L:")
-    st.dataframe(worst_symbols)
+section("Ask TradeHub")
+
+question = st.text_area(
+    "Ask a question",
+    placeholder="Example: What am I doing wrong? Which symbol should I avoid?"
+)
+
+if st.button("Analyse"):
+    command_card(
+        "AI Coach Response",
+        "Full AI analysis will be connected later. For now, use the diagnosis above as your coaching summary.",
+        "Next version will use your journal, playbooks and trade history together."
+    )
