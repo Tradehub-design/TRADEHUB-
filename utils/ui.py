@@ -12,8 +12,10 @@ def load_css():
 def page_header(title, subtitle=""):
     st.markdown(
         f"""
-        <div class="tradehub-title">{title}</div>
-        <div class="tradehub-subtitle">{subtitle}</div>
+        <div class="hero-card">
+            <div class="hero-title">{title}</div>
+            <div class="hero-subtitle">{subtitle}</div>
+        </div>
         """,
         unsafe_allow_html=True
     )
@@ -21,12 +23,14 @@ def page_header(title, subtitle=""):
 
 def section_title(title):
     st.markdown(
-        f'<div class="section-title">{title}</div>',
+        f"""
+        <div class="section-title">{title}</div>
+        """,
         unsafe_allow_html=True
     )
 
 
-def metric_card(label, value, status="neutral"):
+def metric_card(label, value, status="neutral", helper=""):
     status_class = {
         "positive": "metric-positive",
         "negative": "metric-negative",
@@ -35,21 +39,34 @@ def metric_card(label, value, status="neutral"):
 
     st.markdown(
         f"""
-        <div class="tradehub-card">
+        <div class="metric-card">
             <div class="metric-label">{label}</div>
             <div class="metric-value {status_class}">{value}</div>
+            <div class="metric-helper">{helper}</div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
 
-def info_card(title, body):
+def insight_card(title, body):
     st.markdown(
         f"""
-        <div class="tradehub-card">
-            <div style="font-size:17px;font-weight:800;margin-bottom:8px;">{title}</div>
-            <div style="color:#A1A1AA;font-size:14px;line-height:1.5;">{body}</div>
+        <div class="insight-card">
+            <div class="insight-title">{title}</div>
+            <div class="insight-body">{body}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+def glass_card(title, body):
+    st.markdown(
+        f"""
+        <div class="glass-card">
+            <div class="glass-title">{title}</div>
+            <div class="glass-body">{body}</div>
         </div>
         """,
         unsafe_allow_html=True
@@ -58,6 +75,8 @@ def info_card(title, body):
 
 def badge(text):
     st.markdown(
-        f'<span class="badge">{text}</span>',
+        f"""
+        <span class="badge">{text}</span>
+        """,
         unsafe_allow_html=True
     )
