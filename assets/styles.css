@@ -1,49 +1,91 @@
+/* TradeHub Global Styling */
+
 .block-container {
-    padding-top: 1.5rem;
+    padding-top: 1.2rem;
     padding-bottom: 2rem;
+    max-width: 1200px;
 }
 
-.tradehub-card {
-    background: #171B26;
-    border: 1px solid #2A3040;
-    border-radius: 18px;
-    padding: 18px;
-    margin-bottom: 16px;
-}
-
+/* Page Header */
 .tradehub-title {
-    font-size: 28px;
-    font-weight: 800;
+    font-size: 30px;
+    font-weight: 900;
     margin-bottom: 4px;
+    letter-spacing: -0.5px;
 }
 
 .tradehub-subtitle {
     color: #A1A1AA;
     font-size: 14px;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+}
+
+/* Cards */
+.tradehub-card {
+    background: linear-gradient(145deg, #171B26, #111827);
+    border: 1px solid #2A3040;
+    border-radius: 20px;
+    padding: 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+
+/* Metric Cards */
+.metric-label {
+    color: #A1A1AA;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.metric-value {
+    font-size: 26px;
+    font-weight: 900;
 }
 
 .metric-positive {
     color: #22C55E;
-    font-weight: 700;
 }
 
 .metric-negative {
     color: #EF4444;
-    font-weight: 700;
 }
 
 .metric-neutral {
     color: #F4F4F5;
-    font-weight: 700;
 }
 
+/* Badges */
 .badge {
     display: inline-block;
     background: #252B3A;
     color: #C4B5FD;
-    padding: 4px 10px;
+    padding: 5px 11px;
     border-radius: 999px;
     font-size: 12px;
     margin-right: 6px;
+    margin-bottom: 6px;
+}
+
+/* Section headings */
+.section-title {
+    font-size: 20px;
+    font-weight: 800;
+    margin-top: 18px;
+    margin-bottom: 10px;
+}
+
+/* Mobile polish */
+@media only screen and (max-width: 768px) {
+    .tradehub-title {
+        font-size: 24px;
+    }
+
+    .metric-value {
+        font-size: 22px;
+    }
+
+    .tradehub-card {
+        padding: 15px;
+        border-radius: 16px;
+    }
 }
