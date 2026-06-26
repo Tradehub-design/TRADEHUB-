@@ -1,80 +1,123 @@
 import streamlit as st
 
 
+def command_card(title, body, footer=""):
+    st.markdown(
+        f"""
+        <div class="premium-card">
+            <div class="card-title">{title}</div>
+            <div class="card-body">{body}</div>
+            <div class="card-footer">{footer}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+def feature_card(title, body, tag=""):
+    tag_html = f'<span class="tradehub-badge">{tag}</span>' if tag else ""
+
+    st.markdown(
+        f"""
+        <div class="premium-card">
+            {tag_html}
+            <div class="card-title">{title}</div>
+            <div class="card-body">{body}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
 def stat_row(items):
-    cols = st.columns(len(items))
+    columns = st.columns(len(items))
 
-    for col, item in zip(cols, items):
+    for col, item in zip(columns, items):
         with col:
-            label = item.get("label", "")
-            value = item.get("value", "")
-            helper = item.get("helper", "")
             status = item.get("status", "neutral")
-
             status_class = {
                 "positive": "metric-positive",
                 "negative": "metric-negative",
                 "neutral": "metric-neutral",
+                "warning": "metric-warning",
             }.get(status, "metric-neutral")
 
             st.markdown(
                 f"""
-                <div class="metric-card">
-                    <div class="metric-label">{label}</div>
-                    <div class="metric-value {status_class}">{value}</div>
-                    <div class="metric-helper">{helper}</div>
+                <div class="premium-card metric-card">
+                    <div class="metric-label">{item.get("label", "")}</div>
+                    <div class="metric-value {status_class}">
+                        {item.get("value", "-")}
+                    </div>
+                    <div class="metric-helper">{item.get("helper", "")}</div>
                 </div>
                 """,
                 unsafe_allow_html=True
             )
 
 
-def command_card(title, body, footer=""):
+def trade_quality_card(score, helper=""):
+    if score >= 85:
+        status = "metric-positive"
+        label = "Strong Edge"
+    elif score >= 70:
+        status = "metric-warning"
+        label = "Moderate Edge"
+    else:
+        status = "metric-negative"
+        label = "Weak Edge"
+
     st.markdown(
         f"""
-        <div class="insight-card">
-            <div class="insight-title">{title}</div>
-            <div class="insight-body">{body}</div>
-            <div class="metric-helper">{footer}</div>
+        <div class="premium-card edge-card">
+            <div class="metric-label">Trade Quality</div>
+            <div class="edge-score {status}">{score}</div>
+            <div class="metric-helper">{label}</div>
+            <div class="metric-helper">{helper}</div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
 
-def feature_card(title, body, badge_text=""):
-    badge_html = ""
-
-    if badge_text:
-        badge_html = f'<span class="badge">{badge_text}</span>'
-
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            {badge_html}
-            <div style="font-size:18px;font-weight:850;margin-top:8px;">{title}</div>
-            <div style="color:#A4A8B7;font-size:14px;line-height:1.5;margin-top:8px;">{body}</div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-def trade_quality_card(score, message):
-    status = "positive" if score >= 75 else "negative" if score < 50 else "neutral"
-
+def status_badge(text, status="neutral"):
     status_class = {
-        "positive": "metric-positive",
-        "negative": "metric-negative",
-        "neutral": "metric-neutral",
-    }[status]
+        "positive": "badge-positive",
+        "negative": "badge-negative",
+        "warning": "badge-warning",
+        "neutral": "badge-neutral",
+    }.get(status, "badge-neutral")
 
     st.markdown(
         f"""
-        <div class="metric-card">
-            <div class="metric-label">Trade Quality Score</div>
-            <div class="metric-value {status_class}">{score}/100</div>
-            <div class="metric-helper">{message}</div>
+        <span class="tradehub-badge {status_class}">
+            {text}
+        </span>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+def page_note(title, body):
+    st.markdown(
+        f"""
+        <div class="page-note">
+            <div class="page-note-title">{title}</div>
+            <div class="page-note-body">{body}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+def table_header(title, subtitle=""):
+    st.markdown(
+        f"""
+        <div class="table-header">
+            <div>
+                <div class="table-title">{title}</div>
+                <div class="table-subtitle">{subtitle}</div>
+            </div>
         </div>
         """,
         unsafe_allow_html=True
