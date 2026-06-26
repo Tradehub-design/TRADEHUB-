@@ -82,6 +82,8 @@ with st.form("create_playbook_form"):
             supabase.table("playbooks").insert(payload).execute()
 
             st.success("Playbook created.")
+            st.cache_data.clear()
+            st.rerun()
 
 section("Existing Playbooks")
 
@@ -92,7 +94,7 @@ playbook_response = (
     .execute()
 )
 
-playbooks = playbook_response.data
+playbooks = playbook_response.data or []
 
 if not playbooks:
     command_card(
@@ -139,7 +141,15 @@ for playbook in playbooks:
 
             rule_type = st.selectbox(
                 "Rule Type",
-                ["Entry", "Exit", "Risk", "Session", "Psychology", "Confirmation", "Other"]
+                [
+                    "Entry",
+                    "Exit",
+                    "Risk",
+                    "Session",
+                    "Psychology",
+                    "Confirmation",
+                    "Other",
+                ]
             )
 
             is_required = st.checkbox(
@@ -163,6 +173,8 @@ for playbook in playbooks:
                     supabase.table("playbook_rules").insert(rule_payload).execute()
 
                     st.success("Rule added.")
+                    st.cache_data.clear()
+                    st.rerun()
 
         rules_response = (
             supabase.table("playbook_rules")
@@ -171,7 +183,7 @@ for playbook in playbooks:
             .execute()
         )
 
-        rules = rules_response.data
+        rules = rules_response.data or []
 
         if rules:
             for rule in rules:
