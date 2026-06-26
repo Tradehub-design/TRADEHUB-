@@ -5,7 +5,6 @@ class PlannerEngine:
 
     @staticmethod
     def default_plan():
-
         return {
             "plan_date": str(date.today()),
             "market_bias": {},
@@ -18,7 +17,7 @@ class PlannerEngine:
             "stress": 2,
             "confidence": 4,
             "goals": [],
-            "notes": ""
+            "notes": "",
         }
 
     @staticmethod
@@ -36,18 +35,17 @@ class PlannerEngine:
         goals,
         notes
     ):
-
         return {
-            "plan_date": plan_date,
-            "market_bias": market_bias,
-            "focus": focus,
-            "news": news,
-            "max_risk": max_risk,
-            "max_trades": max_trades,
-            "stop_after_losses": stop_after_losses,
-            "sleep": sleep,
-            "stress": stress,
-            "confidence": confidence,
-            "goals": goals,
-            "notes": notes
+            "plan_date": str(plan_date),
+            "market_bias": market_bias or {},
+            "focus": focus or [],
+            "news": news or [],
+            "max_risk": max_risk or 0,
+            "max_trades": max_trades or 0,
+            "stop_after_losses": stop_after_losses or 0,
+            "sleep": sleep or 0,
+            "stress": stress or 0,
+            "confidence": confidence or 0,
+            "goals": goals or [],
+            "notes": notes or "",
         }
