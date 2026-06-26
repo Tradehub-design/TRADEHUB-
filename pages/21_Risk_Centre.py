@@ -100,8 +100,8 @@ section("Risk Notes")
 
 command_card(
     "Risk Centre Status",
-    "This page currently calculates risk from closed trade history. Once MT5 Sync is connected, it will also include live exposure, floating P/L, margin and daily loss tracking.",
-    "Use this page to identify whether losses are controlled and whether average wins are large enough."
+    "This page currently calculates risk from closed trade history. Once MT5 Sync is connected, it will include live exposure, floating P/L, margin and daily loss tracking.",
+    "Use this page to identify whether losses are controlled."
 )
 
 section("Worst Recent Trades")
