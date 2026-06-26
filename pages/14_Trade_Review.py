@@ -26,7 +26,7 @@ playbook_response = (
     .execute()
 )
 
-playbooks = playbook_response.data
+playbooks = playbook_response.data or []
 
 if trades is None or trades.empty:
     command_card(
@@ -79,22 +79,24 @@ stat_row([
         "helper": "Closed result",
         "status": "positive" if net_profit >= 0 else "negative",
     },
-])
-
-stat_row([
     {
         "label": "Session",
         "value": selected_trade.get("session", "-"),
         "helper": "Trading session",
         "status": "neutral",
     },
-    {
-        "label": "Date",
-        "value": selected_trade.get("trade_date", "-"),
-        "helper": "Trade date",
-        "status": "neutral",
-    },
 ])
+
+existing_review = None
+
+if reviews is not None and not reviews.empty:
+    review_match = reviews[
+        (reviews["trade_ticket"] == ticket)
+        & (reviews["account_number"] == account_number)
+    ]
+
+    if not review_match.empty:
+        existing_review = review_match.iloc[0].to_dict()
 
 section("Review Form")
 
@@ -117,14 +119,14 @@ with st.form("trade_review_form"):
         total_rules = st.number_input(
             "Total Rules",
             min_value=0,
-            value=5,
+            value=int(existing_review.get("total_rules", 5)) if existing_review else 5,
             step=1
         )
 
         rules_followed = st.number_input(
             "Rules Followed",
             min_value=0,
-            value=5,
+            value=int(existing_review.get("rules_followed", 5)) if existing_review else 5,
             step=1
         )
 
@@ -133,7 +135,7 @@ with st.form("trade_review_form"):
             "Confidence Score",
             0,
             10,
-            7
+            int(existing_review.get("confidence_score", 7)) if existing_review else 7
         )
 
         mistake_type = st.selectbox(
@@ -183,11 +185,13 @@ with st.form("trade_review_form"):
 
     lesson_learned = st.text_area(
         "Lesson Learned",
+        value=existing_review.get("lesson_learned", "") if existing_review else "",
         placeholder="What did this trade teach you?"
     )
 
     journal_notes = st.text_area(
         "Journal Notes",
+        value=existing_review.get("journal_notes", "") if existing_review else "",
         placeholder="Describe the setup, entry, exit and thought process."
     )
 
@@ -216,71 +220,59 @@ with st.form("trade_review_form"):
                 on_conflict="trade_ticket,account_number"
             ).execute()
 
+            st.cache_data.clear()
             st.success("Trade review saved.")
+            st.rerun()
 
 section("Existing Review")
 
-if reviews is None or reviews.empty:
+if not existing_review:
     command_card(
         "No review yet",
         "Complete the form above to create a structured trade review.",
         "This powers Edge Score, Research and AI Coach."
     )
 else:
-    review_match = reviews[
-        (reviews["trade_ticket"] == ticket)
-        & (reviews["account_number"] == account_number)
-    ]
+    trade_quality_card(
+        int(existing_review.get("rule_score") or 0),
+        f"Grade: {existing_review.get('trade_grade')} | Confidence: {existing_review.get('confidence_score')}/10"
+    )
 
-    if review_match.empty:
-        command_card(
-            "No review yet",
-            "Complete the form above to create a structured trade review.",
-            "This powers Edge Score, Research and AI Coach."
-        )
-    else:
-        review = review_match.iloc[0].to_dict()
+    stat_row([
+        {
+            "label": "Rules Followed",
+            "value": f"{existing_review.get('rules_followed')}/{existing_review.get('total_rules')}",
+            "helper": "Checklist discipline",
+            "status": "positive" if existing_review.get("rule_score", 0) >= 80 else "negative",
+        },
+        {
+            "label": "Mistake",
+            "value": existing_review.get("mistake_type"),
+            "helper": "Recorded issue",
+            "status": "neutral" if existing_review.get("mistake_type") == "None" else "negative",
+        },
+        {
+            "label": "Emotion Before",
+            "value": existing_review.get("emotion_before"),
+            "helper": "Psychology",
+            "status": "neutral",
+        },
+    ])
 
-        trade_quality_card(
-            int(review.get("rule_score") or 0),
-            f"Grade: {review.get('trade_grade')} | Confidence: {review.get('confidence_score')}/10"
-        )
+    command_card(
+        "🤖 AI Review Preview",
+        JournalEngine.ai_style_summary(existing_review),
+        "Full AI review later."
+    )
 
-        stat_row([
-            {
-                "label": "Rules Followed",
-                "value": f"{review.get('rules_followed')}/{review.get('total_rules')}",
-                "helper": "Checklist discipline",
-                "status": "positive" if review.get("rule_score", 0) >= 80 else "negative",
-            },
-            {
-                "label": "Mistake",
-                "value": review.get("mistake_type"),
-                "helper": "Recorded issue",
-                "status": "neutral" if review.get("mistake_type") == "None" else "negative",
-            },
-            {
-                "label": "Emotion Before",
-                "value": review.get("emotion_before"),
-                "helper": "Psychology",
-                "status": "neutral",
-            },
-        ])
+    command_card(
+        "Lesson Learned",
+        existing_review.get("lesson_learned") or "No lesson recorded.",
+        "Journal"
+    )
 
-        command_card(
-            "🤖 AI Review Preview",
-            JournalEngine.ai_style_summary(review),
-            "Full AI review later."
-        )
-
-        command_card(
-            "Lesson Learned",
-            review.get("lesson_learned") or "No lesson recorded.",
-            "Journal"
-        )
-
-        command_card(
-            "Journal Notes",
-            review.get("journal_notes") or "No notes recorded.",
-            "Journal"
-        )
+    command_card(
+        "Journal Notes",
+        existing_review.get("journal_notes") or "No notes recorded.",
+        "Journal"
+    )
