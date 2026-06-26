@@ -1,26 +1,74 @@
 import streamlit as st
-from utils.supabase_client import get_supabase_client
-from utils.analytics_utils import prepare_trades_dataframe
-from utils.calendar_utils import daily_trade_summary
-from dashboard.calendar_heatmap import show_calendar_heatmap
-from dashboard.filter_panel import account_filter
 
-st.title("📅 Calendar")
+from core.ui import load_css, app_header, section
+from core.components import command_card, stat_row, table_header
+from data.data_engine import DataEngine
+from engine.statistics_engine import StatisticsEngine
 
-supabase = get_supabase_client()
 
-if supabase is None:
+load_css()
+
+app_header(
+    "📅 Calendar",
+    "Review trading activity by date and prepare for daily planning."
+)
+
+trades = DataEngine.load_trades()
+
+if trades is None or trades.empty:
+    command_card(
+        "No trades found",
+        "Import trades before using the Calendar.",
+        "Daily activity will appear here."
+    )
     st.stop()
 
-response = supabase.table("trades").select("*").execute()
-df = prepare_trades_dataframe(response.data)
+stats = StatisticsEngine.summary(trades)
 
-if df.empty:
-    st.info("No trades found yet.")
-    st.stop()
+section("Calendar Summary")
 
-df, selected_account = account_filter(df)
+stat_row([
+    {
+        "label": "Total Trades",
+        "value": stats["total_trades"],
+        "helper": "Imported history",
+        "status": "neutral",
+    },
+    {
+        "label": "Net Profit",
+        "value": stats["net_profit"],
+        "helper": "Total closed result",
+        "status": "positive" if stats["net_profit"] >= 0 else "negative",
+    },
+    {
+        "label": "Win Rate",
+        "value": f"{stats['win_rate']}%",
+        "helper": "Overall win rate",
+        "status": "positive" if stats["win_rate"] >= 50 else "negative",
+    },
+])
 
-daily = daily_trade_summary(df)
+section("Recent Trading Dates")
 
-show_calendar_heatmap(daily)
+display_cols = [
+    col for col in [
+        "ticket",
+        "trade_date",
+        "symbol",
+        "direction",
+        "net_profit",
+        "session",
+    ]
+    if col in trades.columns
+]
+
+table_header(
+    "Recent Trades",
+    "Calendar view will become more detailed once daily planning is connected."
+)
+
+st.dataframe(
+    trades[display_cols].head(30),
+    use_container_width=True,
+    hide_index=True
+)
