@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 from core.ui import load_css, app_header, section
-from core.components import command_card, stat_row
+from core.components import command_card, stat_row, table_header, trade_quality_card
 from data.data_engine import DataEngine
 from engine.edge_score import EdgeScoreEngine
 from engine.grade import GradeEngine
@@ -14,7 +14,7 @@ load_css()
 
 app_header(
     "🎬 Trade Replay",
-    "Review the complete story of each trade: result, execution, screenshots and lessons."
+    "Review the full story of each trade: result, execution, screenshots and lessons."
 )
 
 supabase = get_supabase_client()
@@ -74,19 +74,10 @@ stat_row([
         "helper": "Closed result",
         "status": "positive" if selected_trade.get("net_profit", 0) >= 0 else "negative",
     },
-])
-
-stat_row([
     {
         "label": "Session",
         "value": selected_trade.get("session", "-"),
         "helper": "Trading session",
-        "status": "neutral",
-    },
-    {
-        "label": "Date",
-        "value": selected_trade.get("trade_date", "-"),
-        "helper": "Trade date",
         "status": "neutral",
     },
 ])
@@ -111,28 +102,46 @@ if not review_row.empty:
 
     section("Execution Quality")
 
-    stat_row([
-        {
-            "label": "Edge Score",
-            "value": edge,
-            "helper": "Execution quality",
-            "status": "positive" if edge >= 80 else "warning",
-        },
-        {
-            "label": "Grade",
-            "value": grade,
-            "helper": "Trade grade",
-            "status": "positive" if edge >= 80 else "warning",
-        },
-        {
-            "label": "Mistake",
-            "value": review.get("mistake_type", "-"),
-            "helper": "Recorded mistake",
-            "status": "negative" if review.get("mistake_type") not in [None, "None", "-"] else "neutral",
-        },
-    ])
+    col1, col2 = st.columns([0.8, 1.2])
 
-    section("Journal Review")
+    with col1:
+        trade_quality_card(
+            edge,
+            f"Grade {grade}"
+        )
+
+    with col2:
+        stat_row([
+            {
+                "label": "Rule Score",
+                "value": review.get("rule_score", "-"),
+                "helper": "Discipline",
+                "status": "positive" if review.get("rule_score", 0) >= 80 else "warning",
+            },
+            {
+                "label": "Confidence",
+                "value": review.get("confidence_score", "-"),
+                "helper": "Self-rated",
+                "status": "neutral",
+            },
+        ])
+
+        stat_row([
+            {
+                "label": "Mistake",
+                "value": review.get("mistake_type", "-"),
+                "helper": "Recorded issue",
+                "status": "negative" if review.get("mistake_type") not in [None, "None", "-"] else "neutral",
+            },
+            {
+                "label": "Emotion",
+                "value": review.get("emotion_before", "-"),
+                "helper": "Before trade",
+                "status": "neutral",
+            },
+        ])
+
+    section("Journal")
 
     command_card(
         "Lesson Learned",
@@ -169,6 +178,11 @@ if trade_shots.empty:
         "Go to Screenshot Journal."
     )
 else:
+    table_header(
+        "Visual Timeline",
+        f"{len(trade_shots)} screenshots attached"
+    )
+
     for _, shot in trade_shots.iterrows():
         st.markdown(f"### {shot.get('screenshot_type', 'Screenshot')}")
         st.image(
@@ -230,4 +244,6 @@ if st.button("Save Replay"):
         on_conflict="trade_ticket"
     ).execute()
 
+    st.cache_data.clear()
     st.success("Replay saved.")
+    st.rerun()
