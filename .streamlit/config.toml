@@ -1,7 +1,13 @@
 [theme]
 base = "dark"
-primaryColor = "#7C5CFF"
-backgroundColor = "#0E1117"
-secondaryBackgroundColor = "#171B26"
-textColor = "#F4F4F5"
-font = "sans serif"
+primaryColor = "#00D4AA"
+backgroundColor = "#050B14"
+secondaryBackgroundColor = "#101A2B"
+textColor = "#F8FAFC"
+
+[client]
+toolbarMode = "minimal"
+
+[server]
+enableXsrfProtection = true
+enableCORS = false
