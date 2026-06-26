@@ -1,19 +1,45 @@
-from mt5_connector import MT5Connector
+from sync.mt5_connector import MT5Connector
 
-print("--------------------------------")
-print("TradeHub Sync")
-print("--------------------------------")
+from sync.account_sync import AccountSync
 
-MT5Connector.connect()
+from sync.position_sync import PositionSync
 
-account = MT5Connector.account()
+from sync.trade_sync import TradeSync
 
-print(account)
+from sync.sync_logger import SyncLogger
 
-positions = MT5Connector.positions()
+def run_once():
 
-print(f"Open Positions: {len(positions)}")
+    try:
 
-MT5Connector.disconnect()
+        MT5Connector.connect()
 
-print("Finished.")
+        account = AccountSync.sync()
+
+        positions = PositionSync.sync()
+
+        trades = TradeSync.sync(days_back=30)
+
+        SyncLogger.info("--------------------------------")
+
+        SyncLogger.info("TradeHub Sync Complete")
+
+        SyncLogger.info(f"Account: {account.get('account_number')}")
+
+        SyncLogger.info(f"Open Positions: {len(positions)}")
+
+        SyncLogger.info(f"Trades Synced: {len(trades)}")
+
+        SyncLogger.info("--------------------------------")
+
+    except Exception as e:
+
+        SyncLogger.exception(f"Sync failed: {e}")
+
+    finally:
+
+        MT5Connector.disconnect()
+
+if __name__ == "__main__":
+
+    run_once()
