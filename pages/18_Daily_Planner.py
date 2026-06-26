@@ -15,7 +15,6 @@ app_header(
 )
 
 supabase = get_supabase_client()
-
 today = date.today()
 
 section("Today")
@@ -28,9 +27,15 @@ stat_row([
         "status": "neutral",
     },
     {
-        "label": "Status",
-        "value": "Planning",
+        "label": "Planning Status",
+        "value": "Active",
         "helper": "Prepare before trading",
+        "status": "positive",
+    },
+    {
+        "label": "Rule",
+        "value": "Plan First",
+        "helper": "No plan, no trade",
         "status": "warning",
     },
 ])
@@ -57,14 +62,10 @@ for i, pair in enumerate(pairs):
     with cols[i % 3]:
         market_bias[pair] = st.selectbox(
             pair,
-            [
-                "Bullish",
-                "Bearish",
-                "Neutral"
-            ]
+            ["Bullish", "Bearish", "Neutral"],
         )
 
-section("Today's Focus")
+section("Trading Focus")
 
 focus = st.multiselect(
     "Focus Areas",
@@ -79,10 +80,8 @@ focus = st.multiselect(
         "London Open",
         "New York Open",
         "No Trade Day",
-    ]
+    ],
 )
-
-section("News")
 
 news = st.multiselect(
     "News Conditions",
@@ -93,7 +92,7 @@ news = st.multiselect(
         "NFP",
         "Interest Rate",
         "No Major News",
-    ]
+    ],
 )
 
 section("Risk Rules")
@@ -106,7 +105,7 @@ with col1:
         min_value=0.0,
         max_value=10.0,
         value=2.0,
-        step=0.1
+        step=0.1,
     )
 
 with col2:
@@ -115,7 +114,7 @@ with col2:
         min_value=0,
         max_value=20,
         value=3,
-        step=1
+        step=1,
     )
 
 with col3:
@@ -124,7 +123,7 @@ with col3:
         min_value=0,
         max_value=10,
         value=2,
-        step=1
+        step=1,
     )
 
 section("Psychology Check")
@@ -166,7 +165,7 @@ goals = st.multiselect(
         "Respect max risk",
         "Only A+ setups",
         "Stop after rules are broken",
-    ]
+    ],
 )
 
 notes = st.text_area(
@@ -187,14 +186,15 @@ if st.button("Save Daily Plan"):
         stress,
         confidence,
         goals,
-        notes
+        notes,
     )
 
     supabase.table("daily_plans").upsert(
         payload,
-        on_conflict="plan_date"
+        on_conflict="plan_date",
     ).execute()
 
+    st.cache_data.clear()
     st.success("Daily plan saved.")
 
 section("Plan Summary")
@@ -202,5 +202,5 @@ section("Plan Summary")
 command_card(
     "Today's Trading Rules",
     f"Maximum {max_trades} trades, maximum {max_risk}% risk, stop after {stop_after_losses} losses.",
-    "Follow this plan before taking any trade."
+    "Follow this plan before taking any trade.",
 )
