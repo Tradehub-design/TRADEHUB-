@@ -5,7 +5,6 @@ class HealthEngine:
 
     @staticmethod
     def score(trades):
-
         stats = StatisticsEngine.summary(trades)
 
         score = 50
@@ -26,6 +25,10 @@ class HealthEngine:
 
     @staticmethod
     def grade(score):
+        try:
+            score = float(score)
+        except Exception:
+            score = 0
 
         if score >= 95:
             return "A+"
