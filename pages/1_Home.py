@@ -59,6 +59,9 @@ stat_row([
         "helper": "Average result",
         "status": "positive" if stats["average_trade"] >= 0 else "negative",
     },
+])
+
+stat_row([
     {
         "label": "Total Trades",
         "value": stats["total_trades"],
@@ -70,6 +73,18 @@ stat_row([
         "value": health_score,
         "helper": f"Grade {health_grade}",
         "status": "positive" if health_score >= 75 else "warning",
+    },
+    {
+        "label": "Average Win",
+        "value": stats["average_win"],
+        "helper": "Winning trades",
+        "status": "positive",
+    },
+    {
+        "label": "Average Loss",
+        "value": stats["average_loss"],
+        "helper": "Losing trades",
+        "status": "negative",
     },
 ])
 
