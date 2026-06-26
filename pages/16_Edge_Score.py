@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 from core.ui import load_css, app_header, section
-from core.components import command_card, stat_row, table_header
+from core.components import command_card, stat_row, table_header, trade_quality_card
 from data.data_engine import DataEngine
 from engine.edge_score import EdgeScoreEngine
 from engine.grade import GradeEngine
@@ -73,53 +73,50 @@ for _, row in merged.iterrows():
 
 scores = pd.DataFrame(rows)
 
-section("Edge Overview")
-
 average_edge = round(scores["edge_score"].mean(), 1)
 best_edge = int(scores["edge_score"].max())
 worst_edge = int(scores["edge_score"].min())
 
-stat_row([
-    {
-        "label": "Average Edge",
-        "value": average_edge,
-        "helper": "All reviewed trades",
-        "status": "positive" if average_edge >= 80 else "warning",
-    },
-    {
-        "label": "Best Edge",
-        "value": best_edge,
-        "helper": GradeEngine.grade(best_edge),
-        "status": "positive",
-    },
-    {
-        "label": "Worst Edge",
-        "value": worst_edge,
-        "helper": GradeEngine.grade(worst_edge),
-        "status": "negative",
-    },
-])
+section("Edge Overview")
 
-stat_row([
-    {
-        "label": "Reviewed Trades",
-        "value": len(scores),
-        "helper": "With journal review",
-        "status": "neutral",
-    },
-    {
-        "label": "A Grade+",
-        "value": len(scores[scores["edge_score"] >= 80]),
-        "helper": "Strong execution",
-        "status": "positive",
-    },
-    {
-        "label": "Weak Edge",
-        "value": len(scores[scores["edge_score"] < 70]),
-        "helper": "Needs review",
-        "status": "negative",
-    },
-])
+left, right = st.columns([0.8, 1.2])
+
+with left:
+    trade_quality_card(
+        int(average_edge),
+        f"{len(scores)} reviewed trades"
+    )
+
+with right:
+    stat_row([
+        {
+            "label": "Best Edge",
+            "value": best_edge,
+            "helper": GradeEngine.grade(best_edge),
+            "status": "positive",
+        },
+        {
+            "label": "Worst Edge",
+            "value": worst_edge,
+            "helper": GradeEngine.grade(worst_edge),
+            "status": "negative",
+        },
+    ])
+
+    stat_row([
+        {
+            "label": "A Grade+",
+            "value": len(scores[scores["edge_score"] >= 80]),
+            "helper": "Strong execution",
+            "status": "positive",
+        },
+        {
+            "label": "Weak Edge",
+            "value": len(scores[scores["edge_score"] < 70]),
+            "helper": "Needs review",
+            "status": "negative",
+        },
+    ])
 
 section("Edge Leaderboard")
 
