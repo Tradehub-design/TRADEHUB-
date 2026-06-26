@@ -1,42 +1,80 @@
 import streamlit as st
-from utils.supabase_client import get_supabase_client
 
-st.title("⚙️ Settings")
+from core.ui import load_css, app_header, section
+from core.components import command_card, stat_row
+from core.config import AppConfig
+from engine.cache_engine import CacheEngine
 
-supabase = get_supabase_client()
 
-if supabase is None:
-    st.stop()
+load_css()
 
-st.subheader("Add / Update Funded Rules")
+app_header(
+    "⚙ Settings",
+    "Application settings, cache controls and system information."
+)
 
-accounts_response = supabase.table("accounts").select("*").execute()
-accounts = accounts_response.data
+section("Application")
 
-if not accounts:
-    st.info("Add an account first in the Accounts page.")
-    st.stop()
+stat_row([
+    {
+        "label": "App",
+        "value": AppConfig.APP_NAME,
+        "helper": "Trading platform",
+        "status": "neutral",
+    },
+    {
+        "label": "Version",
+        "value": AppConfig.VERSION,
+        "helper": "Current build",
+        "status": "positive",
+    },
+    {
+        "label": "Theme",
+        "value": AppConfig.DEFAULT_THEME,
+        "helper": "Professional dark mode",
+        "status": "neutral",
+    },
+])
 
-account_options = [a["account_number"] for a in accounts]
+section("Trading Defaults")
 
-with st.form("funded_rules_form"):
-    account_number = st.selectbox("Account", account_options)
-    starting_balance = st.number_input("Starting Balance", min_value=0.0)
-    max_daily_loss = st.number_input("Max Daily Loss", min_value=0.0)
-    max_total_loss = st.number_input("Max Total Loss", min_value=0.0)
-    profit_target = st.number_input("Profit Target", min_value=0.0)
-    min_trading_days = st.number_input("Minimum Trading Days", min_value=0, step=1)
+stat_row([
+    {
+        "label": "Default Account",
+        "value": AppConfig.DEFAULT_ACCOUNT,
+        "helper": "Primary broker",
+        "status": "neutral",
+    },
+    {
+        "label": "Currency",
+        "value": AppConfig.DEFAULT_CURRENCY,
+        "helper": "Reporting currency",
+        "status": "neutral",
+    },
+    {
+        "label": "Cache TTL",
+        "value": f"{AppConfig.CACHE_TTL}s",
+        "helper": "Data refresh window",
+        "status": "neutral",
+    },
+])
 
-    submitted = st.form_submit_button("Save Rules")
+section("Cache")
 
-    if submitted:
-        supabase.table("funded_rules").upsert({
-            "account_number": account_number,
-            "starting_balance": starting_balance,
-            "max_daily_loss": max_daily_loss,
-            "max_total_loss": max_total_loss,
-            "profit_target": profit_target,
-            "min_trading_days": min_trading_days
-        }).execute()
+command_card(
+    "Refresh Cached Data",
+    "If the app does not immediately show updated data, clear the cache below.",
+    "This does not delete any data."
+)
 
-        st.success("Funded rules saved.")
+if st.button("Clear App Cache"):
+    CacheEngine.clear()
+    st.success("Cache cleared. Refresh the page if needed.")
+
+section("Version 1 Status")
+
+command_card(
+    "Current Focus",
+    "TradeHub is in Version 1 polish mode. Existing pages are being redesigned and connected before MT5 Sync is completed on desktop.",
+    "No data is changed from this page."
+)
