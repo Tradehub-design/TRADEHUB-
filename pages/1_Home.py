@@ -7,24 +7,85 @@ from engine.statistics_engine import StatisticsEngine
 from engine.health_engine import HealthEngine
 from engine.analytics_engine import AnalyticsEngine
 from engine.edge_score import EdgeScoreEngine
-from engine.grade import GradeEngine
 
 
 load_css()
 
 app_header(
     "🏠 Command Centre",
-    "Your trading cockpit — performance, edge, reviews, risk and recent activity."
+    "Your trading cockpit — performance, live sync, edge, risk and recent activity."
 )
 
 trades = DataEngine.load_trades()
 reviews = DataEngine.load_reviews()
+account_snapshot = DataEngine.load_account_snapshot()
+open_positions = DataEngine.load_open_positions()
+sync_status = DataEngine.load_sync_status()
+
+section("Live Status")
+
+if sync_status.empty:
+    stat_row([
+        {
+            "label": "MT5 Sync",
+            "value": "Offline",
+            "helper": "Desktop agent not connected",
+            "status": "warning",
+        },
+        {
+            "label": "Open Positions",
+            "value": len(open_positions),
+            "helper": "Live positions",
+            "status": "neutral",
+        },
+    ])
+else:
+    status = sync_status.iloc[0]
+
+    stat_row([
+        {
+            "label": "MT5 Sync",
+            "value": status.get("status", "unknown"),
+            "helper": status.get("message", ""),
+            "status": "positive" if status.get("status") == "connected" else "warning",
+        },
+        {
+            "label": "Last Sync",
+            "value": status.get("last_sync", "-"),
+            "helper": "Desktop agent",
+            "status": "neutral",
+        },
+    ])
+
+if not account_snapshot.empty:
+    account = account_snapshot.iloc[0]
+
+    stat_row([
+        {
+            "label": "Balance",
+            "value": account.get("balance", 0),
+            "helper": "Live account",
+            "status": "neutral",
+        },
+        {
+            "label": "Equity",
+            "value": account.get("equity", 0),
+            "helper": "Live equity",
+            "status": "positive" if account.get("equity", 0) >= account.get("balance", 0) else "negative",
+        },
+        {
+            "label": "Floating P/L",
+            "value": account.get("profit", 0),
+            "helper": "Open positions",
+            "status": "positive" if account.get("profit", 0) >= 0 else "negative",
+        },
+    ])
 
 if trades is None or trades.empty:
     command_card(
         "No trades found",
-        "Import trades to activate your dashboard.",
-        "Go to Import when ready."
+        "Import trades or run MT5 Sync to activate your dashboard.",
+        "Go to Import or run sync agent."
     )
     st.stop()
 
@@ -54,37 +115,10 @@ stat_row([
         "status": "positive" if stats["profit_factor"] >= 1 else "negative",
     },
     {
-        "label": "Average Trade",
-        "value": stats["average_trade"],
-        "helper": "Average result",
-        "status": "positive" if stats["average_trade"] >= 0 else "negative",
-    },
-])
-
-stat_row([
-    {
-        "label": "Total Trades",
-        "value": stats["total_trades"],
-        "helper": "Imported trades",
-        "status": "neutral",
-    },
-    {
         "label": "Trading Health",
         "value": health_score,
         "helper": f"Grade {health_grade}",
         "status": "positive" if health_score >= 75 else "warning",
-    },
-    {
-        "label": "Average Win",
-        "value": stats["average_win"],
-        "helper": "Winning trades",
-        "status": "positive",
-    },
-    {
-        "label": "Average Loss",
-        "value": stats["average_loss"],
-        "helper": "Losing trades",
-        "status": "negative",
     },
 ])
 
@@ -95,12 +129,6 @@ monthly = AnalyticsEngine.monthly_summary(trades)
 left, right = st.columns([1.4, 1])
 
 with left:
-    command_card(
-        "Performance Curve",
-        "Your closed trade equity curve based on imported trade history.",
-        "Live balance will connect after MT5 Sync."
-    )
-
     if not monthly.empty:
         st.line_chart(
             monthly.set_index("Month")["NetProfit"]
@@ -130,17 +158,9 @@ with right:
                 f"{len(edge_scores)} reviewed trades"
             )
         else:
-            command_card(
-                "Edge Score Overview",
-                "No reviewed trades yet.",
-                "Complete Trade Review to unlock this."
-            )
+            command_card("Edge Score", "No reviewed trades yet.", "Complete Trade Review.")
     else:
-        command_card(
-            "Edge Score Overview",
-            "No reviewed trades yet.",
-            "Complete Trade Review to unlock this."
-        )
+        command_card("Edge Score", "No reviewed trades yet.", "Complete Trade Review.")
 
 section("Quick Intelligence")
 
@@ -153,29 +173,41 @@ with col1:
     if not symbol_summary.empty:
         row = symbol_summary.iloc[0]
         mini_card("Best Symbol", row["symbol"], f"Net {round(row['NetProfit'], 2)}", "positive", "🏆")
-    else:
-        mini_card("Best Symbol", "N/A", "Insufficient data", "neutral", "🏆")
 
 with col2:
     if not symbol_summary.empty:
         row = symbol_summary.iloc[-1]
         mini_card("Worst Symbol", row["symbol"], f"Net {round(row['NetProfit'], 2)}", "negative", "⚠️")
-    else:
-        mini_card("Worst Symbol", "N/A", "Insufficient data", "neutral", "⚠️")
 
 with col3:
     if not session_summary.empty:
         row = session_summary.iloc[0]
         mini_card("Best Session", row["session"], f"Net {round(row['NetProfit'], 2)}", "positive", "☀️")
-    else:
-        mini_card("Best Session", "N/A", "Insufficient data", "neutral", "☀️")
 
 with col4:
     if not session_summary.empty:
         row = session_summary.iloc[-1]
         mini_card("Worst Session", row["session"], f"Net {round(row['NetProfit'], 2)}", "negative", "🌙")
-    else:
-        mini_card("Worst Session", "N/A", "Insufficient data", "neutral", "🌙")
+
+section("Open Positions")
+
+if open_positions.empty:
+    command_card(
+        "No open positions",
+        "Open positions will appear here once MT5 Sync is running.",
+        "Live monitoring."
+    )
+else:
+    table_header(
+        "Open Positions",
+        f"{len(open_positions)} active positions"
+    )
+
+    st.dataframe(
+        open_positions,
+        use_container_width=True,
+        hide_index=True
+    )
 
 section("Recent Trades")
 
@@ -193,7 +225,7 @@ recent_cols = [
 
 table_header(
     "Recent Trades",
-    "Your latest imported trading activity."
+    "Your latest trading activity."
 )
 
 st.dataframe(
