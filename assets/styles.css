@@ -31,15 +31,11 @@ body,
     color: var(--text) !important;
 }
 
-/* ---------- MAIN CONTAINER ---------- */
-
 .block-container {
     max-width: 1500px;
     padding-top: 1.2rem;
     padding-bottom: 2rem;
 }
-
-/* ---------- STREAMLIT CHROME ---------- */
 
 #MainMenu {
     visibility: hidden;
@@ -49,12 +45,11 @@ footer {
     visibility: hidden;
 }
 
-/* IMPORTANT: do not hide header/sidebar toggle */
 header {
     background: transparent !important;
 }
 
-/* ---------- SIDEBAR FIX + DESIGN ---------- */
+/* ---------- SIDEBAR ---------- */
 
 [data-testid="stSidebar"] {
     display: block !important;
@@ -75,7 +70,7 @@ header {
 [data-testid="stSidebarNav"]::before {
     content: "TRADEHUB";
     display: block;
-    padding: 22px 22px 12px 22px;
+    padding: 22px 22px 8px 22px;
     font-size: 22px;
     font-weight: 950;
     letter-spacing: -0.04em;
@@ -98,6 +93,7 @@ header {
     padding: 10px 12px;
     color: var(--soft) !important;
     transition: 0.2s ease;
+    font-weight: 650;
 }
 
 [data-testid="stSidebar"] a:hover {
@@ -169,8 +165,6 @@ header {
     border-color: var(--border-strong);
 }
 
-/* ---------- METRICS ---------- */
-
 .metric-box {
     min-height: 138px;
 }
@@ -186,6 +180,7 @@ header {
     font-size: 32px;
     font-weight: 950;
     letter-spacing: -0.05em;
+    line-height: 1.05;
 }
 
 .metric-helper {
@@ -239,7 +234,7 @@ header {
     margin-top: 8px;
 }
 
-/* ---------- EDGE PANEL ---------- */
+/* ---------- EDGE ---------- */
 
 .edge-panel {
     min-height: 250px;
@@ -285,7 +280,7 @@ header {
     margin-top: 8px;
 }
 
-/* ---------- TEXT CARDS ---------- */
+/* ---------- TEXT ---------- */
 
 .card-title {
     font-size: 18px;
@@ -305,8 +300,6 @@ header {
     color: var(--muted);
     font-size: 12px;
 }
-
-/* ---------- BADGES ---------- */
 
 .badge {
     display: inline-block;
@@ -350,6 +343,12 @@ header {
     background: var(--card);
 }
 
+thead tr th {
+    background: #0D1626 !important;
+    color: var(--muted) !important;
+    font-weight: 850 !important;
+}
+
 /* ---------- BUTTONS ---------- */
 
 .stButton > button {
@@ -386,6 +385,15 @@ header {
     border-radius: 14px !important;
 }
 
+/* ---------- EXPANDERS ---------- */
+
+.streamlit-expanderHeader {
+    background: var(--card) !important;
+    border-radius: 16px !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border) !important;
+}
+
 /* ---------- DIVIDER ---------- */
 
 .tradehub-divider {
@@ -398,12 +406,13 @@ header {
 
 @media(max-width: 768px) {
     .block-container {
-        padding-left: 1rem;
-        padding-right: 1rem;
+        padding-left: 0.9rem;
+        padding-right: 0.9rem;
+        padding-top: 0.8rem;
     }
 
     .page-title {
-        font-size: 30px;
+        font-size: 28px;
     }
 
     .page-subtitle {
@@ -411,16 +420,20 @@ header {
     }
 
     .metric-box {
-        min-height: 120px;
-        padding: 18px;
+        min-height: 112px;
+        padding: 16px;
     }
 
     .metric-value {
-        font-size: 29px;
+        font-size: 26px;
+    }
+
+    .mini-value {
+        font-size: 23px;
     }
 
     .section-title {
-        font-size: 21px;
+        font-size: 20px;
     }
 
     [data-testid="stSidebar"] {
