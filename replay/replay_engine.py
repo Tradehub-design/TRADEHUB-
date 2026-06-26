@@ -8,11 +8,10 @@ class ReplayEngine:
         lessons,
         improvements
     ):
-
         return {
             "trade_ticket": trade_ticket,
             "account_number": account_number,
-            "summary": summary,
-            "lessons": lessons,
-            "improvements": improvements
+            "summary": summary or "",
+            "lessons": lessons or "",
+            "improvements": improvements or "",
         }
