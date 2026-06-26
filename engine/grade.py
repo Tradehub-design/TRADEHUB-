@@ -2,6 +2,10 @@ class GradeEngine:
 
     @staticmethod
     def grade(edge_score):
+        try:
+            edge_score = float(edge_score)
+        except Exception:
+            edge_score = 0
 
         if edge_score >= 95:
             return "S"
