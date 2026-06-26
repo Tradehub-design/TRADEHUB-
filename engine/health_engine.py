@@ -23,3 +23,23 @@ class HealthEngine:
             score += 10
 
         return min(score, 100)
+
+    @staticmethod
+    def grade(score):
+
+        if score >= 95:
+            return "A+"
+
+        if score >= 90:
+            return "A"
+
+        if score >= 80:
+            return "B"
+
+        if score >= 70:
+            return "C"
+
+        if score >= 60:
+            return "D"
+
+        return "F"
