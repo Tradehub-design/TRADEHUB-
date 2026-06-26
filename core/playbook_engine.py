@@ -30,4 +30,6 @@ class PlaybookEngine:
         return {
             "playbook_id": playbook_id,
             "rule_text": rule_text or "",
-            "rule_type":
+            "rule_type": rule_type or "Other",
+            "is_required": bool(is_required),
+        }
