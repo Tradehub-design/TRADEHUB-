@@ -20,24 +20,28 @@ class DataEngine:
 
     @staticmethod
     def load_trades():
-        return DataEngine._safe_dataframe(
-            CacheEngine.trades()
-        )
+        return DataEngine._safe_dataframe(CacheEngine.trades())
 
     @staticmethod
     def load_reviews():
-        return DataEngine._safe_dataframe(
-            CacheEngine.reviews()
-        )
+        return DataEngine._safe_dataframe(CacheEngine.reviews())
 
     @staticmethod
     def load_screenshots():
-        return DataEngine._safe_dataframe(
-            CacheEngine.screenshots()
-        )
+        return DataEngine._safe_dataframe(CacheEngine.screenshots())
 
     @staticmethod
     def load_replays():
-        return DataEngine._safe_dataframe(
-            CacheEngine.replays()
-        )
+        return DataEngine._safe_dataframe(CacheEngine.replays())
+
+    @staticmethod
+    def load_account_snapshot():
+        return DataEngine._safe_dataframe(CacheEngine.account_snapshot())
+
+    @staticmethod
+    def load_open_positions():
+        return DataEngine._safe_dataframe(CacheEngine.open_positions())
+
+    @staticmethod
+    def load_sync_status():
+        return DataEngine._safe_dataframe(CacheEngine.sync_status())
