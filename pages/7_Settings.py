@@ -19,6 +19,7 @@ trades = DataEngine.load_trades()
 reviews = DataEngine.load_reviews()
 screenshots = DataEngine.load_screenshots()
 replays = DataEngine.load_replays()
+sync_status = DataEngine.load_sync_status()
 
 health = AppHealthEngine.check_tables(
     trades,
@@ -50,6 +51,43 @@ stat_row([
     },
 ])
 
+section("Sync Status")
+
+if sync_status.empty:
+    stat_row([
+        {
+            "label": "MT5 Sync",
+            "value": "Not Connected",
+            "helper": "Run desktop sync agent",
+            "status": "warning",
+        },
+        {
+            "label": "Last Sync",
+            "value": "-",
+            "helper": "No sync detected",
+            "status": "neutral",
+        },
+    ])
+else:
+    row = sync_status.iloc[0]
+
+    status = row.get("status", "unknown")
+
+    stat_row([
+        {
+            "label": "MT5 Sync",
+            "value": status,
+            "helper": row.get("message", ""),
+            "status": "positive" if status == "connected" else "warning",
+        },
+        {
+            "label": "Last Sync",
+            "value": row.get("last_sync", "-"),
+            "helper": "Desktop agent",
+            "status": "neutral",
+        },
+    ])
+
 section("System Health")
 
 stat_row([
@@ -79,29 +117,6 @@ stat_row([
     },
 ])
 
-section("Trading Defaults")
-
-stat_row([
-    {
-        "label": "Default Account",
-        "value": AppConfig.DEFAULT_ACCOUNT,
-        "helper": "Primary broker",
-        "status": "neutral",
-    },
-    {
-        "label": "Currency",
-        "value": AppConfig.DEFAULT_CURRENCY,
-        "helper": "Reporting currency",
-        "status": "neutral",
-    },
-    {
-        "label": "Cache TTL",
-        "value": f"{AppConfig.CACHE_TTL}s",
-        "helper": "Data refresh window",
-        "status": "neutral",
-    },
-])
-
 section("Cache")
 
 command_card(
@@ -113,11 +128,3 @@ command_card(
 if st.button("Clear App Cache"):
     CacheEngine.clear()
     st.success("Cache cleared. Refresh the page if needed.")
-
-section("Version 1 Status")
-
-command_card(
-    "Current Focus",
-    "TradeHub is in Version 1 polish mode. Existing pages are being redesigned and connected before MT5 Sync is completed on desktop.",
-    "No data is changed from this page."
-)
