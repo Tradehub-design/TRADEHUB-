@@ -5,8 +5,10 @@ class AnalyticsEngine:
 
     @staticmethod
     def symbol_summary(df):
+        if df is None or df.empty:
+            return pd.DataFrame()
 
-        if df.empty:
+        if "symbol" not in df.columns or "net_profit" not in df.columns:
             return pd.DataFrame()
 
         result = (
@@ -15,7 +17,7 @@ class AnalyticsEngine:
                 Trades=("symbol", "count"),
                 NetProfit=("net_profit", "sum"),
                 Average=("net_profit", "mean"),
-                Wins=("net_profit", lambda x: (x > 0).sum())
+                Wins=("net_profit", lambda x: (x > 0).sum()),
             )
             .reset_index()
         )
@@ -23,6 +25,9 @@ class AnalyticsEngine:
         result["WinRate"] = (
             result["Wins"] / result["Trades"] * 100
         ).round(1)
+
+        result["NetProfit"] = result["NetProfit"].round(2)
+        result["Average"] = result["Average"].round(2)
 
         return result.sort_values(
             "NetProfit",
@@ -31,8 +36,10 @@ class AnalyticsEngine:
 
     @staticmethod
     def session_summary(df):
+        if df is None or df.empty:
+            return pd.DataFrame()
 
-        if "session" not in df.columns:
+        if "session" not in df.columns or "net_profit" not in df.columns:
             return pd.DataFrame()
 
         result = (
@@ -41,7 +48,7 @@ class AnalyticsEngine:
                 Trades=("session", "count"),
                 NetProfit=("net_profit", "sum"),
                 Average=("net_profit", "mean"),
-                Wins=("net_profit", lambda x: (x > 0).sum())
+                Wins=("net_profit", lambda x: (x > 0).sum()),
             )
             .reset_index()
         )
@@ -50,6 +57,9 @@ class AnalyticsEngine:
             result["Wins"] / result["Trades"] * 100
         ).round(1)
 
+        result["NetProfit"] = result["NetProfit"].round(2)
+        result["Average"] = result["Average"].round(2)
+
         return result.sort_values(
             "NetProfit",
             ascending=False
@@ -57,21 +67,40 @@ class AnalyticsEngine:
 
     @staticmethod
     def monthly_summary(df):
+        if df is None or df.empty:
+            return pd.DataFrame()
 
-        if "trade_date" not in df.columns:
+        if "trade_date" not in df.columns or "net_profit" not in df.columns:
             return pd.DataFrame()
 
         temp = df.copy()
 
-        temp["Month"] = pd.to_datetime(
-            temp["trade_date"]
-        ).dt.strftime("%Y-%m")
+        temp["trade_date"] = pd.to_datetime(
+            temp["trade_date"],
+            errors="coerce"
+        )
 
-        return (
+        temp = temp.dropna(subset=["trade_date"])
+
+        if temp.empty:
+            return pd.DataFrame()
+
+        temp["Month"] = temp["trade_date"].dt.strftime("%Y-%m")
+
+        result = (
             temp.groupby("Month")
             .agg(
                 Trades=("Month", "count"),
-                NetProfit=("net_profit", "sum")
+                NetProfit=("net_profit", "sum"),
+                Wins=("net_profit", lambda x: (x > 0).sum()),
             )
             .reset_index()
         )
+
+        result["WinRate"] = (
+            result["Wins"] / result["Trades"] * 100
+        ).round(1)
+
+        result["NetProfit"] = result["NetProfit"].round(2)
+
+        return result.sort_values("Month")
