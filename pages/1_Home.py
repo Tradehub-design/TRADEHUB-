@@ -1,8 +1,7 @@
 import streamlit as st
-import pandas as pd
 
 from core.ui import load_css, app_header, section
-from core.components import stat_row, command_card, table_header
+from core.components import stat_row, command_card, table_header, mini_card, trade_quality_card
 from data.data_engine import DataEngine
 from engine.statistics_engine import StatisticsEngine
 from engine.health_engine import HealthEngine
@@ -54,9 +53,6 @@ stat_row([
         "helper": "Gross profit / gross loss",
         "status": "positive" if stats["profit_factor"] >= 1 else "negative",
     },
-])
-
-stat_row([
     {
         "label": "Average Trade",
         "value": stats["average_trade"],
@@ -64,128 +60,107 @@ stat_row([
         "status": "positive" if stats["average_trade"] >= 0 else "negative",
     },
     {
-        "label": "Trading Health",
-        "value": health_score,
-        "helper": f"Grade {health_grade}",
-        "status": "positive" if health_score >= 75 else "warning",
-    },
-    {
         "label": "Total Trades",
         "value": stats["total_trades"],
         "helper": "Imported trades",
         "status": "neutral",
     },
+    {
+        "label": "Trading Health",
+        "value": health_score,
+        "helper": f"Grade {health_grade}",
+        "status": "positive" if health_score >= 75 else "warning",
+    },
 ])
-
-section("Edge Score")
-
-if reviews is not None and not reviews.empty:
-    merged = trades.merge(
-        reviews,
-        left_on=["ticket", "account_number"],
-        right_on=["trade_ticket", "account_number"],
-        how="inner"
-    )
-
-    edge_scores = []
-
-    for _, row in merged.iterrows():
-        row_data = row.to_dict()
-        edge_scores.append(
-            EdgeScoreEngine.calculate(row_data, row_data)
-        )
-
-    if edge_scores:
-        avg_edge = round(sum(edge_scores) / len(edge_scores), 1)
-        best_edge = max(edge_scores)
-        worst_edge = min(edge_scores)
-
-        stat_row([
-            {
-                "label": "Average Edge",
-                "value": avg_edge,
-                "helper": "Execution quality",
-                "status": "positive" if avg_edge >= 80 else "warning",
-            },
-            {
-                "label": "Best Edge",
-                "value": best_edge,
-                "helper": GradeEngine.grade(best_edge),
-                "status": "positive",
-            },
-            {
-                "label": "Worst Edge",
-                "value": worst_edge,
-                "helper": GradeEngine.grade(worst_edge),
-                "status": "negative",
-            },
-        ])
-    else:
-        command_card(
-            "No reviewed trades yet",
-            "Complete trade reviews to activate Edge Score.",
-            "Trade Review will power your execution quality."
-        )
-else:
-    command_card(
-        "No journal reviews yet",
-        "Review trades to unlock Edge Score and AI-style insights.",
-        "Start with your most recent trade."
-    )
 
 section("Performance Overview")
 
 monthly = AnalyticsEngine.monthly_summary(trades)
 
-if not monthly.empty:
-    st.line_chart(
-        monthly.set_index("Month")["NetProfit"]
-    )
-else:
-    st.info("Monthly performance will appear once trade dates are available.")
+left, right = st.columns([1.4, 1])
 
-section("Best / Worst")
+with left:
+    command_card(
+        "Performance Curve",
+        "Your closed trade equity curve based on imported trade history.",
+        "Live balance will connect after MT5 Sync."
+    )
+
+    if not monthly.empty:
+        st.line_chart(
+            monthly.set_index("Month")["NetProfit"]
+        )
+    else:
+        st.info("Monthly performance will appear once trade dates are available.")
+
+with right:
+    if reviews is not None and not reviews.empty:
+        merged = trades.merge(
+            reviews,
+            left_on=["ticket", "account_number"],
+            right_on=["trade_ticket", "account_number"],
+            how="inner"
+        )
+
+        edge_scores = []
+
+        for _, row in merged.iterrows():
+            data = row.to_dict()
+            edge_scores.append(EdgeScoreEngine.calculate(data, data))
+
+        if edge_scores:
+            avg_edge = round(sum(edge_scores) / len(edge_scores), 1)
+            trade_quality_card(
+                int(avg_edge),
+                f"{len(edge_scores)} reviewed trades"
+            )
+        else:
+            command_card(
+                "Edge Score Overview",
+                "No reviewed trades yet.",
+                "Complete Trade Review to unlock this."
+            )
+    else:
+        command_card(
+            "Edge Score Overview",
+            "No reviewed trades yet.",
+            "Complete Trade Review to unlock this."
+        )
+
+section("Quick Intelligence")
 
 symbol_summary = AnalyticsEngine.symbol_summary(trades)
 session_summary = AnalyticsEngine.session_summary(trades)
 
-if not symbol_summary.empty:
-    best_symbol = symbol_summary.iloc[0]
-    worst_symbol = symbol_summary.iloc[-1]
+col1, col2, col3, col4 = st.columns(4)
 
-    stat_row([
-        {
-            "label": "Best Symbol",
-            "value": best_symbol["symbol"],
-            "helper": f"Net {round(best_symbol['NetProfit'], 2)}",
-            "status": "positive",
-        },
-        {
-            "label": "Worst Symbol",
-            "value": worst_symbol["symbol"],
-            "helper": f"Net {round(worst_symbol['NetProfit'], 2)}",
-            "status": "negative",
-        },
-    ])
+with col1:
+    if not symbol_summary.empty:
+        row = symbol_summary.iloc[0]
+        mini_card("Best Symbol", row["symbol"], f"Net {round(row['NetProfit'], 2)}", "positive", "🏆")
+    else:
+        mini_card("Best Symbol", "N/A", "Insufficient data", "neutral", "🏆")
 
-if not session_summary.empty:
-    best_session = session_summary.iloc[0]
-    worst_session = session_summary.iloc[-1]
+with col2:
+    if not symbol_summary.empty:
+        row = symbol_summary.iloc[-1]
+        mini_card("Worst Symbol", row["symbol"], f"Net {round(row['NetProfit'], 2)}", "negative", "⚠️")
+    else:
+        mini_card("Worst Symbol", "N/A", "Insufficient data", "neutral", "⚠️")
 
-    stat_row([
-        {
-            "label": "Best Session",
-            "value": best_session["session"],
-            "helper": f"Net {round(best_session['NetProfit'], 2)}",
-            "status": "positive",
-        },
-        {
-            "label": "Worst Session",
-            "value": worst_session["session"],
-            "helper": f"Net {round(worst_session['NetProfit'], 2)}",
-            "status": "negative",
-        },
-    ])
+with col3:
+    if not session_summary.empty:
+        row = session_summary.iloc[0]
+        mini_card("Best Session", row["session"], f"Net {round(row['NetProfit'], 2)}", "positive", "☀️")
+    else:
+        mini_card("Best Session", "N/A", "Insufficient data", "neutral", "☀️")
+
+with col4:
+    if not session_summary.empty:
+        row = session_summary.iloc[-1]
+        mini_card("Worst Session", row["session"], f"Net {round(row['NetProfit'], 2)}", "negative", "🌙")
+    else:
+        mini_card("Worst Session", "N/A", "Insufficient data", "neutral", "🌙")
 
 section("Recent Trades")
 
