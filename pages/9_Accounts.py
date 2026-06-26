@@ -1,55 +1,101 @@
 import streamlit as st
-from utils.supabase_client import get_supabase_client
 
-st.title("🏦 Accounts")
+from core.ui import load_css, app_header, section
+from core.components import command_card, stat_row, table_header
+from data.data_engine import DataEngine
+from engine.statistics_engine import StatisticsEngine
+from engine.analytics_engine import AnalyticsEngine
 
-supabase = get_supabase_client()
 
-if supabase is None:
+load_css()
+
+app_header(
+    "💼 Accounts",
+    "Manage trading accounts and review account-level performance."
+)
+
+trades = DataEngine.load_trades()
+
+if trades is None or trades.empty:
+    command_card(
+        "No account data yet",
+        "Import trades first to activate account analytics.",
+        "MT5 Sync will later update this automatically."
+    )
     st.stop()
 
-st.subheader("Add / Update Account")
+section("Account Overview")
 
-with st.form("account_form"):
-    account_number = st.text_input("MT5 Account Number")
-    account_name = st.text_input("Account Name")
-    broker = st.text_input("Broker", value="Fusion Markets")
-    platform = st.text_input("Platform", value="MT5")
-    account_type = st.selectbox(
-        "Account Type",
-        ["Live", "Demo", "Challenge", "Funded", "Prop Firm"]
-    )
-    currency = st.selectbox("Currency", ["AUD", "USD", "GBP", "EUR"])
-    starting_balance = st.number_input("Starting Balance", min_value=0.0)
-    current_balance = st.number_input("Current Balance", min_value=0.0)
+stats = StatisticsEngine.summary(trades)
 
-    submitted = st.form_submit_button("Save Account")
+stat_row([
+    {
+        "label": "Account",
+        "value": "Fusion Markets",
+        "helper": "Default account",
+        "status": "neutral",
+    },
+    {
+        "label": "Net Profit",
+        "value": stats["net_profit"],
+        "helper": "Closed result",
+        "status": "positive" if stats["net_profit"] >= 0 else "negative",
+    },
+    {
+        "label": "Win Rate",
+        "value": f"{stats['win_rate']}%",
+        "helper": "Winning percentage",
+        "status": "positive" if stats["win_rate"] >= 50 else "negative",
+    },
+])
 
-    if submitted:
-        if not account_number:
-            st.error("Account number is required.")
-        else:
-            supabase.table("accounts").upsert({
-                "account_number": account_number,
-                "account_name": account_name,
-                "broker": broker,
-                "platform": platform,
-                "account_type": account_type,
-                "currency": currency,
-                "starting_balance": starting_balance,
-                "current_balance": current_balance
-            }).execute()
+stat_row([
+    {
+        "label": "Total Trades",
+        "value": stats["total_trades"],
+        "helper": "Imported trades",
+        "status": "neutral",
+    },
+    {
+        "label": "Profit Factor",
+        "value": stats["profit_factor"],
+        "helper": "Gross profit / gross loss",
+        "status": "positive" if stats["profit_factor"] >= 1 else "negative",
+    },
+    {
+        "label": "Average Trade",
+        "value": stats["average_trade"],
+        "helper": "Average closed result",
+        "status": "positive" if stats["average_trade"] >= 0 else "negative",
+    },
+])
 
-            st.success("Account saved.")
+section("Account Performance")
 
-st.divider()
+monthly = AnalyticsEngine.monthly_summary(trades)
 
-st.subheader("Existing Accounts")
-
-response = supabase.table("accounts").select("*").execute()
-accounts = response.data
-
-if accounts:
-    st.dataframe(accounts, use_container_width=True)
+if monthly.empty:
+    st.info("Monthly account performance will appear once trade dates are available.")
 else:
-    st.info("No accounts added yet.")
+    st.line_chart(
+        monthly.set_index("Month")["NetProfit"]
+    )
+
+    table_header(
+        "Monthly Account Results",
+        "Performance grouped by month."
+    )
+
+    st.dataframe(
+        monthly,
+        use_container_width=True,
+        hide_index=True
+    )
+
+section("Account Notes")
+
+command_card(
+    "MT5 Sync Ready",
+    "This page is ready to receive live balance, equity, margin and open-position data once the desktop sync agent is connected.",
+    "For now, it uses your imported trade history."
+)
