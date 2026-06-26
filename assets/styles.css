@@ -1,9 +1,7 @@
 /* ============================================================
    TRADEHUB PROFESSIONAL UI SYSTEM
-   Version 1.0
+   Version 1.1
 ============================================================ */
-
-/* ---------- GLOBAL ---------- */
 
 :root {
     --bg-main: #070D17;
@@ -47,8 +45,6 @@ html, body, [data-testid="stAppViewContainer"] {
     padding-top: 1rem;
     padding-bottom: 2rem;
 }
-
-/* ---------- HIDE STREAMLIT BRANDING ---------- */
 
 #MainMenu {
     visibility: hidden;
@@ -188,7 +184,21 @@ header {
     color: var(--text-main) !important;
 }
 
-/* ---------- INSIGHTS ---------- */
+/* ---------- EDGE SCORE ---------- */
+
+.edge-card {
+    text-align: center;
+}
+
+.edge-score {
+    font-size: 56px;
+    font-weight: 950;
+    letter-spacing: -0.06em;
+    line-height: 1;
+    margin: 14px 0;
+}
+
+/* ---------- CARD TEXT ---------- */
 
 .insight-title,
 .card-title {
@@ -225,6 +235,80 @@ header {
     border: 1px solid rgba(0, 212, 170, 0.22);
     margin-right: 6px;
     margin-bottom: 6px;
+}
+
+.badge-positive {
+    color: var(--primary);
+    background: rgba(0, 212, 170, 0.12);
+    border-color: rgba(0, 212, 170, 0.28);
+}
+
+.badge-negative {
+    color: var(--red);
+    background: rgba(255, 91, 110, 0.12);
+    border-color: rgba(255, 91, 110, 0.28);
+}
+
+.badge-warning {
+    color: var(--yellow);
+    background: rgba(255, 181, 71, 0.12);
+    border-color: rgba(255, 181, 71, 0.28);
+}
+
+.badge-neutral {
+    color: var(--text-soft);
+    background: rgba(148, 163, 184, 0.12);
+    border-color: rgba(148, 163, 184, 0.20);
+}
+
+/* ---------- NOTES ---------- */
+
+.page-note {
+    background:
+        linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(124, 92, 255, 0.10)),
+        #0D1626;
+    border: 1px solid rgba(56, 189, 248, 0.22);
+    border-radius: 20px;
+    padding: 18px;
+    margin-bottom: 18px;
+}
+
+.page-note-title {
+    color: var(--text-main);
+    font-size: 15px;
+    font-weight: 850;
+    margin-bottom: 6px;
+}
+
+.page-note-body {
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* ---------- TABLE HEADER ---------- */
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 18px 18px 0 0;
+    padding: 18px 20px;
+    margin-top: 12px;
+}
+
+.table-title {
+    font-size: 17px;
+    font-weight: 850;
+    color: var(--text-main);
+}
+
+.table-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
 }
 
 /* ---------- BUTTONS ---------- */
@@ -268,7 +352,7 @@ header {
 /* ---------- TABLES ---------- */
 
 [data-testid="stDataFrame"] {
-    border-radius: 18px;
+    border-radius: 0 0 18px 18px;
     overflow: hidden;
     border: 1px solid var(--border-soft);
     background: var(--bg-card);
@@ -332,6 +416,10 @@ thead tr th {
 
     .metric-value {
         font-size: 28px;
+    }
+
+    .edge-score {
+        font-size: 46px;
     }
 
     .section-title {
