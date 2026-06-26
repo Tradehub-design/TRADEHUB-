@@ -11,7 +11,7 @@ load_css()
 
 app_header(
     "🤖 AI Coach",
-    "Rule-based coaching from your trades, journal reviews and playbook discipline."
+    "Rule-based coaching from your trades, journal reviews and discipline data."
 )
 
 trades = DataEngine.load_trades()
@@ -84,6 +84,14 @@ stat_row([
         "status": "negative",
     },
 ])
+
+section("Coach Notes")
+
+command_card(
+    "What TradeHub Sees",
+    "Your current coaching summary is based on imported trades and completed trade reviews. Complete more reviews to improve the quality of the feedback.",
+    "Screenshot and AI chart review will be connected later."
+)
 
 section("Ask TradeHub")
 
