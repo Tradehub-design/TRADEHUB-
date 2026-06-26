@@ -1,50 +1,45 @@
 /* ============================================================
-   TRADEHUB PROFESSIONAL UI SYSTEM
-   Version 1.1
+   TRADEHUB PROFESSIONAL DASHBOARD UI
 ============================================================ */
 
 :root {
-    --bg-main: #070D17;
-    --bg-panel: #0D1626;
-    --bg-card: #111C2E;
-    --bg-card-soft: #142033;
-
-    --border-soft: rgba(148, 163, 184, 0.16);
+    --bg: #050B14;
+    --panel: #0A1220;
+    --card: #101A2B;
+    --card-2: #132033;
+    --border: rgba(148, 163, 184, 0.16);
     --border-strong: rgba(0, 212, 170, 0.35);
 
-    --text-main: #F8FAFC;
-    --text-muted: #94A3B8;
-    --text-soft: #CBD5E1;
+    --text: #F8FAFC;
+    --muted: #94A3B8;
+    --soft: #CBD5E1;
 
-    --primary: #00D4AA;
-    --primary-soft: rgba(0, 212, 170, 0.12);
-
-    --blue: #38BDF8;
-    --purple: #7C5CFF;
-    --green: #22C55E;
+    --green: #00D4AA;
     --red: #FF5B6E;
-    --yellow: #FFB547;
-
-    --radius-lg: 22px;
-    --radius-md: 16px;
-    --radius-sm: 10px;
-
-    --shadow-card: 0 18px 45px rgba(0, 0, 0, 0.35);
+    --blue: #38BDF8;
+    --yellow: #FACC15;
+    --purple: #7C5CFF;
 }
 
-html, body, [data-testid="stAppViewContainer"] {
+html,
+body,
+[data-testid="stAppViewContainer"] {
     background:
-        radial-gradient(circle at top left, rgba(0, 212, 170, 0.08), transparent 32%),
+        radial-gradient(circle at top left, rgba(0, 212, 170, 0.08), transparent 30%),
         radial-gradient(circle at top right, rgba(124, 92, 255, 0.10), transparent 28%),
-        var(--bg-main) !important;
-    color: var(--text-main) !important;
+        var(--bg) !important;
+    color: var(--text) !important;
 }
+
+/* ---------- MAIN CONTAINER ---------- */
 
 .block-container {
     max-width: 1500px;
-    padding-top: 1rem;
+    padding-top: 1.2rem;
     padding-bottom: 2rem;
 }
+
+/* ---------- STREAMLIT CHROME ---------- */
 
 #MainMenu {
     visibility: hidden;
@@ -54,280 +49,322 @@ footer {
     visibility: hidden;
 }
 
+/* IMPORTANT: do not hide header/sidebar toggle */
 header {
-    visibility: hidden;
+    background: transparent !important;
 }
 
-/* ---------- SIDEBAR ---------- */
+/* ---------- SIDEBAR FIX + DESIGN ---------- */
 
 [data-testid="stSidebar"] {
+    display: block !important;
+    visibility: visible !important;
     background:
-        linear-gradient(180deg, #08111F 0%, #0B1220 100%) !important;
-    border-right: 1px solid var(--border-soft);
+        linear-gradient(180deg, #07111E 0%, #09111D 100%) !important;
+    border-right: 1px solid var(--border);
 }
 
-[data-testid="stSidebar"] * {
-    color: var(--text-soft);
-}
-
-[data-testid="stSidebar"] a {
-    border-radius: 12px;
-    margin: 3px 8px;
-}
-
-[data-testid="stSidebar"] a:hover {
-    background: rgba(0, 212, 170, 0.10);
+[data-testid="stSidebar"] > div {
+    background: transparent !important;
 }
 
 [data-testid="stSidebarNav"] {
     padding-top: 1rem;
 }
 
-/* ---------- HERO ---------- */
-
-.app-hero,
-.hero-card {
-    background:
-        linear-gradient(135deg, rgba(0, 212, 170, 0.18), rgba(124, 92, 255, 0.16)),
-        linear-gradient(180deg, #111C2E 0%, #0D1626 100%);
-    border: 1px solid var(--border-soft);
-    border-radius: 30px;
-    padding: 30px;
-    margin-bottom: 28px;
-    box-shadow: var(--shadow-card);
-}
-
-.app-hero-title,
-.hero-title {
-    font-size: 36px;
-    line-height: 1.1;
-    font-weight: 900;
+[data-testid="stSidebarNav"]::before {
+    content: "TRADEHUB";
+    display: block;
+    padding: 22px 22px 12px 22px;
+    font-size: 22px;
+    font-weight: 950;
     letter-spacing: -0.04em;
-    color: var(--text-main);
-    margin-bottom: 10px;
+    color: var(--text);
 }
 
-.app-hero-subtitle,
-.hero-subtitle {
-    color: var(--text-muted);
-    font-size: 16px;
-    line-height: 1.7;
+[data-testid="stSidebarNav"]::after {
+    content: "Professional Trading Journal";
+    display: block;
+    padding: 0 22px 18px 22px;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+[data-testid="stSidebar"] a {
+    border-radius: 14px;
+    margin: 4px 10px;
+    padding: 10px 12px;
+    color: var(--soft) !important;
+    transition: 0.2s ease;
+}
+
+[data-testid="stSidebar"] a:hover {
+    background: rgba(0, 212, 170, 0.10);
+    color: var(--text) !important;
+}
+
+[data-testid="stSidebar"] a[aria-current="page"] {
+    background:
+        linear-gradient(135deg, rgba(0, 212, 170, 0.18), rgba(56, 189, 248, 0.10));
+    border: 1px solid rgba(0, 212, 170, 0.22);
+    color: var(--green) !important;
+}
+
+/* ---------- HEADER ---------- */
+
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 26px;
+    padding: 6px 0 4px 0;
+}
+
+.page-title {
+    font-size: 34px;
+    font-weight: 950;
+    letter-spacing: -0.05em;
+    color: var(--text);
+}
+
+.page-subtitle {
+    color: var(--muted);
+    margin-top: 6px;
+    font-size: 15px;
 }
 
 /* ---------- SECTIONS ---------- */
 
 .section-title {
-    font-size: 23px;
-    font-weight: 850;
-    letter-spacing: -0.03em;
-    color: var(--text-main);
-    margin-top: 30px;
-    margin-bottom: 16px;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    margin-top: 28px;
+    margin-bottom: 14px;
+    color: var(--text);
 }
 
 /* ---------- CARDS ---------- */
 
-.premium-card,
-.metric-card,
-.insight-card {
+.pro-card,
+.metric-box,
+.mini-card,
+.edge-panel {
     background:
-        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)),
-        var(--bg-card);
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius-lg);
-    padding: 22px;
+        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.008)),
+        var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
     margin-bottom: 16px;
-    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.22);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
 }
 
-.premium-card:hover,
-.metric-card:hover,
-.insight-card:hover {
-    border-color: rgba(0, 212, 170, 0.28);
+.pro-card:hover,
+.metric-box:hover,
+.mini-card:hover,
+.edge-panel:hover {
+    border-color: var(--border-strong);
 }
 
 /* ---------- METRICS ---------- */
 
+.metric-box {
+    min-height: 138px;
+}
+
 .metric-label {
-    color: var(--text-muted);
+    color: var(--muted);
     font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 10px;
+    font-weight: 700;
+    margin-bottom: 12px;
 }
 
 .metric-value {
     font-size: 32px;
-    font-weight: 900;
-    letter-spacing: -0.04em;
-    color: var(--text-main);
+    font-weight: 950;
+    letter-spacing: -0.05em;
 }
 
 .metric-helper {
-    color: var(--text-muted);
+    margin-top: 12px;
+    color: var(--muted);
     font-size: 12px;
-    margin-top: 10px;
 }
 
-.metric-positive {
-    color: var(--primary) !important;
+.positive {
+    color: var(--green) !important;
 }
 
-.metric-negative {
+.negative {
     color: var(--red) !important;
 }
 
-.metric-warning {
+.warning {
     color: var(--yellow) !important;
 }
 
-.metric-neutral {
-    color: var(--text-main) !important;
+.neutral {
+    color: var(--text) !important;
 }
 
-/* ---------- EDGE SCORE ---------- */
+/* ---------- MINI CARDS ---------- */
 
-.edge-card {
-    text-align: center;
+.mini-card {
+    min-height: 120px;
 }
 
-.edge-score {
-    font-size: 56px;
-    font-weight: 950;
-    letter-spacing: -0.06em;
-    line-height: 1;
-    margin: 14px 0;
-}
-
-/* ---------- CARD TEXT ---------- */
-
-.insight-title,
-.card-title {
-    font-size: 18px;
-    font-weight: 800;
-    color: var(--text-main);
+.mini-icon {
+    font-size: 20px;
     margin-bottom: 10px;
 }
 
-.insight-body,
+.mini-title {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.mini-value {
+    font-size: 26px;
+    font-weight: 950;
+    margin-top: 8px;
+}
+
+.mini-helper {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+/* ---------- EDGE PANEL ---------- */
+
+.edge-panel {
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.edge-circle {
+    height: 150px;
+    width: 150px;
+    border-radius: 50%;
+    border: 14px solid rgba(148, 163, 184, 0.22);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px auto;
+}
+
+.edge-number {
+    font-size: 42px;
+    font-weight: 950;
+    line-height: 1;
+}
+
+.edge-total {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.edge-label {
+    text-align: center;
+    color: var(--green);
+    font-weight: 800;
+    margin-top: 6px;
+}
+
+.edge-helper {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+/* ---------- TEXT CARDS ---------- */
+
+.card-title {
+    font-size: 18px;
+    font-weight: 850;
+    color: var(--text);
+    margin-bottom: 8px;
+}
+
 .card-body {
-    color: var(--text-soft);
-    line-height: 1.7;
+    color: var(--soft);
+    line-height: 1.65;
     font-size: 14px;
 }
 
 .card-footer {
     margin-top: 12px;
-    color: var(--text-muted);
+    color: var(--muted);
     font-size: 12px;
 }
 
 /* ---------- BADGES ---------- */
 
-.tradehub-badge,
 .badge {
     display: inline-block;
-    padding: 7px 12px;
+    padding: 6px 11px;
     border-radius: 999px;
-    background: var(--primary-soft);
-    color: var(--primary);
-    font-size: 12px;
-    font-weight: 800;
-    border: 1px solid rgba(0, 212, 170, 0.22);
-    margin-right: 6px;
-    margin-bottom: 6px;
-}
-
-.badge-positive {
-    color: var(--primary);
     background: rgba(0, 212, 170, 0.12);
-    border-color: rgba(0, 212, 170, 0.28);
-}
-
-.badge-negative {
-    color: var(--red);
-    background: rgba(255, 91, 110, 0.12);
-    border-color: rgba(255, 91, 110, 0.28);
-}
-
-.badge-warning {
-    color: var(--yellow);
-    background: rgba(255, 181, 71, 0.12);
-    border-color: rgba(255, 181, 71, 0.28);
-}
-
-.badge-neutral {
-    color: var(--text-soft);
-    background: rgba(148, 163, 184, 0.12);
-    border-color: rgba(148, 163, 184, 0.20);
-}
-
-/* ---------- NOTES ---------- */
-
-.page-note {
-    background:
-        linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(124, 92, 255, 0.10)),
-        #0D1626;
-    border: 1px solid rgba(56, 189, 248, 0.22);
-    border-radius: 20px;
-    padding: 18px;
-    margin-bottom: 18px;
-}
-
-.page-note-title {
-    color: var(--text-main);
-    font-size: 15px;
+    color: var(--green);
+    border: 1px solid rgba(0, 212, 170, 0.26);
+    font-size: 11px;
     font-weight: 850;
-    margin-bottom: 6px;
+    margin-bottom: 10px;
 }
 
-.page-note-body {
-    color: var(--text-muted);
-    font-size: 13px;
-    line-height: 1.6;
-}
-
-/* ---------- TABLE HEADER ---------- */
+/* ---------- TABLES ---------- */
 
 .table-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--bg-card);
-    border: 1px solid var(--border-soft);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-bottom: none;
     border-radius: 18px 18px 0 0;
     padding: 18px 20px;
-    margin-top: 12px;
+    margin-top: 10px;
 }
 
 .table-title {
+    color: var(--text);
     font-size: 17px;
-    font-weight: 850;
-    color: var(--text-main);
+    font-weight: 900;
 }
 
 .table-subtitle {
+    color: var(--muted);
     font-size: 12px;
-    color: var(--text-muted);
-    margin-top: 4px;
+    margin-top: 5px;
+}
+
+[data-testid="stDataFrame"] {
+    border-radius: 0 0 18px 18px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--card);
 }
 
 /* ---------- BUTTONS ---------- */
 
 .stButton > button {
-    width: 100%;
     border-radius: 14px;
     border: 1px solid rgba(0, 212, 170, 0.35);
-    background:
-        linear-gradient(135deg, #00D4AA 0%, #0EA5E9 100%);
+    background: linear-gradient(135deg, #00D4AA, #38BDF8);
     color: #001018;
-    font-weight: 850;
-    height: 48px;
-    box-shadow: 0 12px 30px rgba(0, 212, 170, 0.18);
+    font-weight: 900;
+    height: 46px;
+    box-shadow: 0 14px 30px rgba(0, 212, 170, 0.18);
 }
 
 .stButton > button:hover {
+    filter: brightness(1.08);
     border-color: rgba(0, 212, 170, 0.65);
-    filter: brightness(1.05);
 }
 
 /* ---------- INPUTS ---------- */
@@ -336,93 +373,57 @@ header {
 .stNumberInput input,
 .stTextArea textarea {
     background: #0B1424 !important;
-    color: var(--text-main) !important;
-    border: 1px solid var(--border-soft) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border) !important;
     border-radius: 14px !important;
 }
 
 .stSelectbox div[data-baseweb="select"] > div,
 .stMultiSelect div[data-baseweb="select"] > div {
     background: #0B1424 !important;
-    color: var(--text-main) !important;
-    border: 1px solid var(--border-soft) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border) !important;
     border-radius: 14px !important;
-}
-
-/* ---------- TABLES ---------- */
-
-[data-testid="stDataFrame"] {
-    border-radius: 0 0 18px 18px;
-    overflow: hidden;
-    border: 1px solid var(--border-soft);
-    background: var(--bg-card);
-}
-
-thead tr th {
-    background: #0D1626 !important;
-    color: var(--text-muted) !important;
-    font-weight: 800 !important;
-}
-
-/* ---------- EXPANDERS ---------- */
-
-.streamlit-expanderHeader {
-    background: var(--bg-card) !important;
-    border-radius: 16px !important;
-    color: var(--text-main) !important;
-    border: 1px solid var(--border-soft) !important;
 }
 
 /* ---------- DIVIDER ---------- */
 
 .tradehub-divider {
     height: 1px;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(148, 163, 184, 0.25),
-        transparent
-    );
+    background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.25), transparent);
     margin: 28px 0;
-}
-
-/* ---------- CHARTS ---------- */
-
-[data-testid="stVegaLiteChart"],
-[data-testid="stPlotlyChart"],
-[data-testid="stImage"] {
-    border-radius: 18px;
 }
 
 /* ---------- MOBILE ---------- */
 
 @media(max-width: 768px) {
-
     .block-container {
         padding-left: 1rem;
         padding-right: 1rem;
     }
 
-    .app-hero,
-    .hero-card {
-        padding: 24px;
-        border-radius: 24px;
-    }
-
-    .app-hero-title,
-    .hero-title {
+    .page-title {
         font-size: 30px;
     }
 
-    .metric-value {
-        font-size: 28px;
+    .page-subtitle {
+        font-size: 14px;
     }
 
-    .edge-score {
-        font-size: 46px;
+    .metric-box {
+        min-height: 120px;
+        padding: 18px;
+    }
+
+    .metric-value {
+        font-size: 29px;
     }
 
     .section-title {
         font-size: 21px;
+    }
+
+    [data-testid="stSidebar"] {
+        min-width: 270px !important;
     }
 }
