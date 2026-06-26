@@ -24,21 +24,6 @@ class TradeEngine:
         return prepare_trades_dataframe(response.data)
 
     @classmethod
-    def load_trade(cls, ticket):
-
-        df = cls.load_all()
-
-        if df.empty:
-            return None
-
-        trade = df[df["ticket"] == ticket]
-
-        if trade.empty:
-            return None
-
-        return trade.iloc[0]
-
-    @classmethod
     def load_reviews(cls):
 
         response = (
