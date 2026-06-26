@@ -1,8 +1,7 @@
 import streamlit as st
-import pandas as pd
 
 from core.ui import load_css, app_header, section
-from core.components import command_card, stat_row
+from core.components import command_card, stat_row, table_header
 from data.data_engine import DataEngine
 from core.screenshot_engine import ScreenshotEngine
 from utils.supabase_client import get_supabase_client
@@ -69,6 +68,12 @@ stat_row([
         "value": selected_trade.get("net_profit", 0),
         "helper": "Closed result",
         "status": "positive" if selected_trade.get("net_profit", 0) >= 0 else "negative",
+    },
+    {
+        "label": "Session",
+        "value": selected_trade.get("session", "-"),
+        "helper": "Trading session",
+        "status": "neutral",
     },
 ])
 
@@ -191,6 +196,11 @@ else:
                 if slot_images.empty:
                     st.info(f"No {slot} screenshot uploaded yet.")
                 else:
+                    table_header(
+                        slot,
+                        f"{len(slot_images)} screenshot(s)"
+                    )
+
                     for _, shot in slot_images.iterrows():
                         st.image(
                             shot.get("public_url"),
