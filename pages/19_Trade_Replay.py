@@ -1,185 +1,233 @@
 import streamlit as st
 import pandas as pd
 
-from utils.supabase_client import get_supabase_client
-from utils.analytics_utils import prepare_trades_dataframe
-
 from core.ui import load_css, app_header, section
 from core.components import command_card, stat_row
-
+from data.data_engine import DataEngine
 from engine.edge_score import EdgeScoreEngine
 from engine.grade import GradeEngine
-
 from replay.replay_engine import ReplayEngine
+from utils.supabase_client import get_supabase_client
+
 
 load_css()
 
 app_header(
     "🎬 Trade Replay",
-    "Review every trade from beginning to end."
+    "Review the complete story of each trade: result, execution, screenshots and lessons."
 )
 
 supabase = get_supabase_client()
 
-trade_response = (
-    supabase.table("trades")
-    .select("*")
-    .order("trade_date", desc=True)
-    .execute()
-)
+trades = DataEngine.load_trades()
+reviews = DataEngine.load_reviews()
+screenshots = DataEngine.load_screenshots()
+replays = DataEngine.load_replays()
 
-review_response = (
-    supabase.table("trade_journal_reviews")
-    .select("*")
-    .execute()
-)
-
-shot_response = (
-    supabase.table("trade_screenshots")
-    .select("*")
-    .execute()
-)
-
-trades = prepare_trades_dataframe(trade_response.data)
-
-reviews = pd.DataFrame(review_response.data)
-shots = pd.DataFrame(shot_response.data)
-
-if trades.empty:
-
+if trades is None or trades.empty:
     command_card(
-        "No trades",
-        "Import trades first.",
+        "No trades found",
+        "Import trades before using Trade Replay.",
         "Go to Import."
     )
-
     st.stop()
 
-trade_labels = []
+section("Select Trade")
+
+trade_options = []
 
 for _, trade in trades.iterrows():
+    label = f"{trade.get('ticket')} | {trade.get('symbol')} | {trade.get('direction')} | {trade.get('net_profit')}"
+    trade_options.append((label, trade.to_dict()))
 
-    trade_labels.append(
-        f"{trade['ticket']} | {trade['symbol']} | {trade['net_profit']}"
-    )
-
-selected = st.selectbox(
+selected_label = st.selectbox(
     "Trade",
-    trade_labels
+    [item[0] for item in trade_options]
 )
 
-ticket = int(selected.split("|")[0].strip())
+selected_trade = next(
+    item[1] for item in trade_options
+    if item[0] == selected_label
+)
 
-trade = trades[
-    trades["ticket"] == ticket
-].iloc[0]
+ticket = selected_trade.get("ticket")
+account_number = selected_trade.get("account_number")
 
-section("Trade")
+section("Trade Summary")
 
 stat_row([
     {
-        "label":"Pair",
-        "value":trade["symbol"],
-        "helper":"Instrument",
-        "status":"neutral"
+        "label": "Symbol",
+        "value": selected_trade.get("symbol", "-"),
+        "helper": "Instrument",
+        "status": "neutral",
     },
     {
-        "label":"Profit",
-        "value":trade["net_profit"],
-        "helper":"Closed Result",
-        "status":"positive" if trade["net_profit"]>=0 else "negative"
-    }
+        "label": "Direction",
+        "value": selected_trade.get("direction", "-"),
+        "helper": "Buy / Sell",
+        "status": "neutral",
+    },
+    {
+        "label": "Net Profit",
+        "value": selected_trade.get("net_profit", 0),
+        "helper": "Closed result",
+        "status": "positive" if selected_trade.get("net_profit", 0) >= 0 else "negative",
+    },
 ])
 
-review = reviews[
-    reviews["trade_ticket"] == ticket
-]
+stat_row([
+    {
+        "label": "Session",
+        "value": selected_trade.get("session", "-"),
+        "helper": "Trading session",
+        "status": "neutral",
+    },
+    {
+        "label": "Date",
+        "value": selected_trade.get("trade_date", "-"),
+        "helper": "Trade date",
+        "status": "neutral",
+    },
+])
 
-if not review.empty:
+review_row = pd.DataFrame()
 
-    review = review.iloc[0]
+if reviews is not None and not reviews.empty:
+    review_row = reviews[
+        (reviews["trade_ticket"] == ticket)
+        & (reviews["account_number"] == account_number)
+    ]
+
+if not review_row.empty:
+    review = review_row.iloc[0].to_dict()
 
     edge = EdgeScoreEngine.calculate(
-        review.to_dict(),
-        trade.to_dict()
+        review,
+        selected_trade
     )
 
     grade = GradeEngine.grade(edge)
 
-    section("Execution")
+    section("Execution Quality")
 
     stat_row([
         {
-            "label":"Edge Score",
-            "value":edge,
-            "helper":"Execution Quality",
-            "status":"positive"
+            "label": "Edge Score",
+            "value": edge,
+            "helper": "Execution quality",
+            "status": "positive" if edge >= 80 else "warning",
         },
         {
-            "label":"Grade",
-            "value":grade,
-            "helper":"Overall",
-            "status":"positive"
-        }
+            "label": "Grade",
+            "value": grade,
+            "helper": "Trade grade",
+            "status": "positive" if edge >= 80 else "warning",
+        },
+        {
+            "label": "Mistake",
+            "value": review.get("mistake_type", "-"),
+            "helper": "Recorded mistake",
+            "status": "negative" if review.get("mistake_type") not in [None, "None", "-"] else "neutral",
+        },
     ])
+
+    section("Journal Review")
+
+    command_card(
+        "Lesson Learned",
+        review.get("lesson_learned") or "No lesson recorded.",
+        "From Trade Review"
+    )
+
+    command_card(
+        "Journal Notes",
+        review.get("journal_notes") or "No journal notes recorded.",
+        "From Trade Review"
+    )
+else:
+    command_card(
+        "No trade review yet",
+        "Complete a Trade Review to activate Edge Score and journal insights.",
+        "Go to Trade Review."
+    )
 
 section("Screenshot Timeline")
 
-trade_shots = shots[
-    shots["trade_ticket"] == ticket
-]
+trade_shots = pd.DataFrame()
+
+if screenshots is not None and not screenshots.empty:
+    trade_shots = screenshots[
+        (screenshots["trade_ticket"] == ticket)
+        & (screenshots["account_number"] == account_number)
+    ]
 
 if trade_shots.empty:
-
-    st.info("No screenshots uploaded.")
-
+    command_card(
+        "No screenshots yet",
+        "Upload screenshots to build a visual trade timeline.",
+        "Go to Screenshot Journal."
+    )
 else:
-
     for _, shot in trade_shots.iterrows():
-
-        st.markdown(f"### {shot['screenshot_type']}")
-
+        st.markdown(f"### {shot.get('screenshot_type', 'Screenshot')}")
         st.image(
-            shot["public_url"],
+            shot.get("public_url"),
             use_container_width=True
         )
 
-        if shot["notes"]:
-            st.caption(
-                shot["notes"]
-            )
+        if shot.get("notes"):
+            st.info(shot.get("notes"))
+
+        st.caption(shot.get("created_at"))
 
 section("Replay Notes")
 
+existing_replay = pd.DataFrame()
+
+if replays is not None and not replays.empty:
+    existing_replay = replays[
+        (replays["trade_ticket"] == ticket)
+        & (replays["account_number"] == account_number)
+    ]
+
+default_summary = ""
+default_lessons = ""
+default_improvements = ""
+
+if not existing_replay.empty:
+    replay_row = existing_replay.iloc[0]
+    default_summary = replay_row.get("summary") or ""
+    default_lessons = replay_row.get("lessons") or ""
+    default_improvements = replay_row.get("improvements") or ""
+
 summary = st.text_area(
-    "Summary"
+    "Summary",
+    value=default_summary
 )
 
 lessons = st.text_area(
-    "Lessons Learned"
+    "Lessons Learned",
+    value=default_lessons
 )
 
 improvements = st.text_area(
-    "What will you improve next time?"
+    "What will you improve next time?",
+    value=default_improvements
 )
 
 if st.button("Save Replay"):
-
     payload = ReplayEngine.build_payload(
         ticket,
-        trade["account_number"],
+        account_number,
         summary,
         lessons,
         improvements
     )
 
-    supabase.table(
-        "trade_replays"
-    ).upsert(
+    supabase.table("trade_replays").upsert(
         payload,
         on_conflict="trade_ticket"
     ).execute()
 
-    st.success(
-        "Replay saved."
-    )
+    st.success("Replay saved.")
