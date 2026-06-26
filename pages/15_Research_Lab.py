@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 from core.ui import load_css, app_header, section
-from core.components import stat_row, command_card, table_header
+from core.components import stat_row, command_card, table_header, mini_card
 from data.data_engine import DataEngine
 from research.queries import ResearchQueries
 from research.insights import ResearchInsights
@@ -14,7 +14,7 @@ load_css()
 
 app_header(
     "🔬 Research Lab",
-    "Filter, compare and study your trades to find what is actually working."
+    "Filter, compare and study your trades to find what actually works."
 )
 
 trades = DataEngine.load_trades()
@@ -59,12 +59,12 @@ if reviews is not None and not reviews.empty:
 
 df = ResearchInsights.add_confidence_bucket(df)
 
-section("Filters")
+section("Research Filters")
 
 symbols = ["All"] + sorted(df["symbol"].dropna().unique().tolist()) if "symbol" in df.columns else ["All"]
 sessions = ["All"] + sorted(df["session"].dropna().unique().tolist()) if "session" in df.columns else ["All"]
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     symbol = st.selectbox("Symbol", symbols)
@@ -78,10 +78,11 @@ with col3:
         ["All", "Win", "Loss", "Breakeven"]
     )
 
-direction = st.selectbox(
-    "Direction",
-    ["All", "BUY", "SELL"]
-)
+with col4:
+    direction = st.selectbox(
+        "Direction",
+        ["All", "BUY", "SELL"]
+    )
 
 compare_options = [
     None,
@@ -134,26 +135,11 @@ stat_row([
         "helper": "Filtered result",
         "status": "positive" if stats["net_profit"] >= 0 else "negative",
     },
-])
-
-stat_row([
     {
         "label": "Profit Factor",
         "value": stats["profit_factor"],
         "helper": "Gross profit / loss",
         "status": "positive" if stats["profit_factor"] >= 1 else "negative",
-    },
-    {
-        "label": "Average Win",
-        "value": stats["average_win"],
-        "helper": "Winning trades",
-        "status": "positive",
-    },
-    {
-        "label": "Average Loss",
-        "value": stats["average_loss"],
-        "helper": "Losing trades",
-        "status": "negative",
     },
 ])
 
@@ -185,32 +171,40 @@ if "edge_score" in filtered.columns and filtered["edge_score"].notna().any():
         },
     ])
 
-section("Quick Insights")
+section("Quick Intelligence")
 
 best_symbol, worst_symbol = ResearchInsights.best_and_worst(filtered, "symbol")
 best_session, worst_session = ResearchInsights.best_and_worst(filtered, "session")
 costliest_mistake = ResearchInsights.most_expensive_mistake(filtered)
 
-stat_row([
-    {
-        "label": "Best Symbol",
-        "value": best_symbol,
-        "helper": "Highest net profit",
-        "status": "positive",
-    },
-    {
-        "label": "Worst Symbol",
-        "value": worst_symbol,
-        "helper": "Lowest net profit",
-        "status": "negative",
-    },
-    {
-        "label": "Costliest Mistake",
-        "value": costliest_mistake,
-        "helper": "Worst mistake impact",
-        "status": "negative",
-    },
-])
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    mini_card(
+        "Best Symbol",
+        best_symbol,
+        "Highest net profit",
+        "positive",
+        "🏆"
+    )
+
+with col2:
+    mini_card(
+        "Worst Symbol",
+        worst_symbol,
+        "Lowest net profit",
+        "negative",
+        "⚠️"
+    )
+
+with col3:
+    mini_card(
+        "Costliest Mistake",
+        costliest_mistake,
+        "Worst mistake impact",
+        "negative",
+        "❌"
+    )
 
 if not comparison.empty:
     section("Comparison")
