@@ -115,3 +115,24 @@ def trade_quality_card(score, helper=""):
         """,
         unsafe_allow_html=True,
     )
+
+
+def status_card(title, value, helper="", status="neutral", icon=""):
+    status_class = {
+        "positive": "positive",
+        "negative": "negative",
+        "warning": "warning",
+        "neutral": "neutral",
+    }.get(status, "neutral")
+
+    st.markdown(
+        f"""
+        <div class="pro-card">
+            <div class="mini-icon">{icon}</div>
+            <div class="metric-label">{title}</div>
+            <div class="metric-value {status_class}">{value}</div>
+            <div class="metric-helper">{helper}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
