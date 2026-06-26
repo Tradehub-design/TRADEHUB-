@@ -6,7 +6,7 @@ class AppConfig:
 
     APP_NAME = "TradeHub"
 
-    VERSION = "0.5.4"
+    VERSION = "0.6.0"
 
     AUTHOR = "TradeHub"
 
@@ -22,7 +22,7 @@ class AppConfig:
 
     DEFAULT_CURRENCY = "AUD"
 
-    DEFAULT_THEME = "Dark"
+    DEFAULT_THEME = "Professional Dark"
 
     SCREENSHOT_BUCKET = "trade-screenshots"
 
