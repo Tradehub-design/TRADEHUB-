@@ -1,12 +1,9 @@
 import streamlit as st
-import pandas as pd
-
-from utils.supabase_client import get_supabase_client
-from utils.analytics_utils import prepare_trades_dataframe
 
 from core.ui import load_css, app_header, section
-from core.components import stat_row, command_card
-
+from core.components import stat_row, command_card, table_header
+from data.data_engine import DataEngine
+from engine.statistics_engine import StatisticsEngine
 from engine.analytics_engine import AnalyticsEngine
 
 
@@ -14,150 +11,159 @@ load_css()
 
 app_header(
     "📊 Analytics Pro",
-    "Understand your strongest symbols, sessions, months and trading performance."
+    "Analyse performance by symbol, session and month."
 )
 
-supabase = get_supabase_client()
+trades = DataEngine.load_trades()
 
-if supabase is None:
-    st.stop()
-
-trade_response = (
-    supabase.table("trades")
-    .select("*")
-    .order("trade_date", desc=True)
-    .execute()
-)
-
-df = prepare_trades_dataframe(trade_response.data)
-
-if df.empty:
+if trades is None or trades.empty:
     command_card(
         "No trades found",
-        "Import trades before using Analytics Pro.",
+        "Import trades before using Analytics.",
         "Go to Import."
     )
     st.stop()
 
-section("Overall Summary")
+stats = StatisticsEngine.summary(trades)
 
-wins = df[df["net_profit"] > 0]
-losses = df[df["net_profit"] < 0]
-
-total_trades = len(df)
-net_profit = round(df["net_profit"].sum(), 2)
-win_rate = round((len(wins) / total_trades) * 100, 2) if total_trades else 0
-average_trade = round(df["net_profit"].mean(), 2)
+section("Account Performance")
 
 stat_row([
-    {
-        "label": "Total Trades",
-        "value": total_trades,
-        "helper": "Imported trades",
-        "status": "neutral",
-    },
     {
         "label": "Net Profit",
-        "value": net_profit,
-        "helper": "Total closed result",
-        "status": "positive" if net_profit >= 0 else "negative",
+        "value": stats["net_profit"],
+        "helper": "Total result",
+        "status": "positive" if stats["net_profit"] >= 0 else "negative",
+    },
+    {
+        "label": "Win Rate",
+        "value": f"{stats['win_rate']}%",
+        "helper": "Winning percentage",
+        "status": "positive" if stats["win_rate"] >= 50 else "negative",
+    },
+    {
+        "label": "Profit Factor",
+        "value": stats["profit_factor"],
+        "helper": "Gross profit / loss",
+        "status": "positive" if stats["profit_factor"] >= 1 else "negative",
     },
 ])
 
 stat_row([
     {
-        "label": "Win Rate",
-        "value": f"{win_rate}%",
-        "helper": "Winning trades / all trades",
-        "status": "positive" if win_rate >= 50 else "negative",
+        "label": "Average Win",
+        "value": stats["average_win"],
+        "helper": "Winning trades",
+        "status": "positive",
     },
     {
-        "label": "Avg Trade",
-        "value": average_trade,
-        "helper": "Average result per trade",
-        "status": "positive" if average_trade >= 0 else "negative",
+        "label": "Average Loss",
+        "value": stats["average_loss"],
+        "helper": "Losing trades",
+        "status": "negative",
+    },
+    {
+        "label": "Average Trade",
+        "value": stats["average_trade"],
+        "helper": "Expected average",
+        "status": "positive" if stats["average_trade"] >= 0 else "negative",
     },
 ])
+
+section("Monthly Performance")
+
+monthly = AnalyticsEngine.monthly_summary(trades)
+
+if monthly.empty:
+    st.info("No monthly performance data available.")
+else:
+    st.line_chart(
+        monthly.set_index("Month")["NetProfit"]
+    )
+
+    table_header(
+        "Monthly Results",
+        "Performance grouped by calendar month."
+    )
+
+    st.dataframe(
+        monthly,
+        use_container_width=True,
+        hide_index=True
+    )
 
 section("Symbol Leaderboard")
 
-symbol_df = AnalyticsEngine.symbol_summary(df)
+symbol_summary = AnalyticsEngine.symbol_summary(trades)
 
-if symbol_df.empty:
+if symbol_summary.empty:
     st.info("No symbol data available.")
 else:
+    table_header(
+        "Symbols",
+        "Your strongest and weakest traded instruments."
+    )
+
     st.dataframe(
-        symbol_df,
+        symbol_summary,
         use_container_width=True,
         hide_index=True
     )
 
 section("Session Leaderboard")
 
-session_df = AnalyticsEngine.session_summary(df)
+session_summary = AnalyticsEngine.session_summary(trades)
 
-if session_df.empty:
+if session_summary.empty:
     st.info("No session data available.")
 else:
+    table_header(
+        "Sessions",
+        "Your performance by trading session."
+    )
+
     st.dataframe(
-        session_df,
+        session_summary,
         use_container_width=True,
         hide_index=True
     )
 
-section("Monthly Performance")
+section("Best / Worst Summary")
 
-monthly_df = AnalyticsEngine.monthly_summary(df)
-
-if monthly_df.empty:
-    st.info("No monthly data available.")
-else:
-    st.line_chart(
-        monthly_df.set_index("Month")["NetProfit"]
-    )
-
-    st.dataframe(
-        monthly_df,
-        use_container_width=True,
-        hide_index=True
-    )
-
-section("Best / Worst")
-
-if not symbol_df.empty:
-    best_symbol = symbol_df.iloc[0]
-    worst_symbol = symbol_df.iloc[-1]
+if not symbol_summary.empty:
+    best_symbol = symbol_summary.iloc[0]
+    worst_symbol = symbol_summary.iloc[-1]
 
     stat_row([
         {
             "label": "Best Symbol",
             "value": best_symbol["symbol"],
-            "helper": f'Net: {round(best_symbol["NetProfit"], 2)}',
+            "helper": f"Net {round(best_symbol['NetProfit'], 2)}",
             "status": "positive",
         },
         {
             "label": "Worst Symbol",
             "value": worst_symbol["symbol"],
-            "helper": f'Net: {round(worst_symbol["NetProfit"], 2)}',
+            "helper": f"Net {round(worst_symbol['NetProfit'], 2)}",
             "status": "negative",
         },
     ])
 
-if not session_df.empty:
-    best_session = session_df.iloc[0]
-    worst_session = session_df.iloc[-1]
+if not session_summary.empty:
+    best_session = session_summary.iloc[0]
+    worst_session = session_summary.iloc[-1]
 
     stat_row([
         {
             "label": "Best Session",
             "value": best_session["session"],
-            "helper": f'Net: {round(best_session["NetProfit"], 2)}',
+            "helper": f"Net {round(best_session['NetProfit'], 2)}",
             "status": "positive",
         },
         {
             "label": "Worst Session",
             "value": worst_session["session"],
-            "helper": f'Net: {round(worst_session["NetProfit"], 2)}',
+            "helper": f"Net {round(worst_session['NetProfit'], 2)}",
             "status": "negative",
         },
     ])
