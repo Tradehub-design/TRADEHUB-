@@ -92,7 +92,7 @@ else:
         hide_index=True
     )
 
-section("Account Notes")
+section("MT5 Sync Readiness")
 
 command_card(
     "MT5 Sync Ready",
