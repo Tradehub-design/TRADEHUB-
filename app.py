@@ -1,14 +1,26 @@
 import streamlit as st
 
+from v2.navigation import V2Navigation
+from v2.style import V2Style
+from v2.ui import V2UI
+
+
 st.set_page_config(
-    page_title="TradeHub",
+    page_title="TradeHub V2",
     page_icon="📈",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
-st.sidebar.title("📈 TradeHub")
-st.sidebar.write("Use the sidebar pages to navigate.")
+V2Style.load()
 
-st.title("📈 TradeHub")
-st.write("Welcome to TradeHub.")
+selected = V2Navigation.sidebar()
+
+V2UI.header(
+    selected,
+    "TradeHub V2 workspace"
+)
+
+st.info(
+    "V2 navigation is active. Next step: build the Dashboard workspace."
+)
