@@ -111,4 +111,191 @@ class AnalyticsV2:
             "Overview",
             "Symbols",
             "Sessions",
-           
+            "Weekdays",
+            "Months",
+            "Hours",
+            "Drawdown",
+            "Risk",
+            "Accounts",
+        ])
+
+        with tabs[0]:
+            V2UI.section("Performance Overview")
+            AnalyticsV2._summary_cards(df)
+
+            V2UI.section("Equity Curve")
+            curve = AnalyticsV2._drawdown(df)
+
+            if not curve.empty:
+                st.line_chart(
+                    curve.set_index("trade_date")["equity_curve"],
+                    height=300
+                )
+
+            V2UI.section("Monthly Performance")
+            monthly = AnalyticsEngine.monthly_summary(df)
+
+            if not monthly.empty:
+                st.bar_chart(
+                    monthly.set_index("Month")["NetProfit"],
+                    height=280
+                )
+
+            V2UI.section("Trade History")
+            st.dataframe(
+                df.head(50),
+                use_container_width=True,
+                hide_index=True
+            )
+
+        with tabs[1]:
+            V2UI.section("Symbol Analytics")
+            symbol_summary = AnalyticsEngine.symbol_summary(df)
+
+            st.dataframe(
+                symbol_summary,
+                use_container_width=True,
+                hide_index=True
+            )
+
+            if not symbol_summary.empty:
+                st.bar_chart(
+                    symbol_summary.set_index("symbol")["NetProfit"],
+                    height=320
+                )
+
+        with tabs[2]:
+            V2UI.section("Session Analytics")
+            session_summary = AnalyticsEngine.session_summary(df)
+
+            st.dataframe(
+                session_summary,
+                use_container_width=True,
+                hide_index=True
+            )
+
+            if not session_summary.empty:
+                st.bar_chart(
+                    session_summary.set_index("session")["NetProfit"],
+                    height=320
+                )
+
+        with tabs[3]:
+            V2UI.section("Weekday Analytics")
+            weekday_summary = AnalyticsV2._group_summary(df, "weekday")
+
+            st.dataframe(
+                weekday_summary,
+                use_container_width=True,
+                hide_index=True
+            )
+
+            if not weekday_summary.empty:
+                st.bar_chart(
+                    weekday_summary.set_index("weekday")["NetProfit"],
+                    height=320
+                )
+
+        with tabs[4]:
+            V2UI.section("Month Analytics")
+            month_summary = AnalyticsV2._group_summary(df, "month")
+
+            st.dataframe(
+                month_summary,
+                use_container_width=True,
+                hide_index=True
+            )
+
+            if not month_summary.empty:
+                st.bar_chart(
+                    month_summary.set_index("month")["NetProfit"],
+                    height=320
+                )
+
+        with tabs[5]:
+            V2UI.section("Hour Analytics")
+            hour_summary = AnalyticsV2._group_summary(df, "hour")
+
+            st.dataframe(
+                hour_summary,
+                use_container_width=True,
+                hide_index=True
+            )
+
+            if not hour_summary.empty:
+                st.bar_chart(
+                    hour_summary.set_index("hour")["NetProfit"],
+                    height=320
+                )
+
+        with tabs[6]:
+            V2UI.section("Drawdown")
+            drawdown = AnalyticsV2._drawdown(df)
+
+            if drawdown.empty:
+                st.info("No drawdown data.")
+            else:
+                st.line_chart(
+                    drawdown.set_index("trade_date")["drawdown"],
+                    height=320
+                )
+
+                max_dd = drawdown["drawdown"].min()
+
+                st.metric(
+                    "Max Drawdown",
+                    FormatEngine.signed_currency(max_dd)
+                )
+
+                st.dataframe(
+                    drawdown[
+                        [
+                            "ticket",
+                            "trade_date",
+                            "symbol",
+                            "direction",
+                            "net_profit",
+                            "equity_curve",
+                            "drawdown",
+                        ]
+                    ],
+                    use_container_width=True,
+                    hide_index=True
+                )
+
+        with tabs[7]:
+            V2UI.section("Risk Analytics")
+
+            stats = StatisticsEngine.summary(df)
+
+            c1, c2, c3, c4 = st.columns(4)
+
+            c1.metric("Average Win", FormatEngine.signed_currency(stats["average_win"]))
+            c2.metric("Average Loss", FormatEngine.signed_currency(stats["average_loss"]))
+            c3.metric("Gross Profit", FormatEngine.currency(stats["gross_profit"]))
+            c4.metric("Gross Loss", FormatEngine.currency(stats["gross_loss"]))
+
+            if "hold_minutes" in df.columns:
+                V2UI.section("Holding Time")
+                hold = df["hold_minutes"].dropna()
+
+                if not hold.empty:
+                    st.metric("Average Hold Minutes", round(hold.mean(), 1))
+                    st.bar_chart(hold)
+
+        with tabs[8]:
+            V2UI.section("Account Comparison")
+
+            if "account_number" not in df.columns:
+                st.info("No account data available.")
+            else:
+                account_summary = AnalyticsV2._group_summary(
+                    df,
+                    "account_number"
+                )
+
+                st.dataframe(
+                    account_summary,
+                    use_container_width=True,
+                    hide_index=True
+                )
