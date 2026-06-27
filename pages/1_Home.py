@@ -1,235 +1,254 @@
 import streamlit as st
+import pandas as pd
 
 from core.ui import load_css, app_header, section
-from core.components import stat_row, command_card, table_header, mini_card, trade_quality_card
+from core.components import table_header
 from data.data_engine import DataEngine
 from engine.statistics_engine import StatisticsEngine
-from engine.health_engine import HealthEngine
 from engine.analytics_engine import AnalyticsEngine
-from engine.edge_score import EdgeScoreEngine
+from engine.format_engine import FormatEngine
+from engine.advanced_metrics_engine import AdvancedMetricsEngine
+from components.dashboard_v3 import DashboardV3
+from components.trade_table import TradeTable
 
 
 load_css()
+DashboardV3.load_css()
 
 app_header(
-    "🏠 Command Centre",
-    "Your trading cockpit — performance, live sync, edge, risk and recent activity."
+    "Dashboard",
+    "Your trading performance overview"
 )
+
+DashboardV3.quick_menu()
 
 trades = DataEngine.load_trades()
 reviews = DataEngine.load_reviews()
-account_snapshot = DataEngine.load_account_snapshot()
 open_positions = DataEngine.load_open_positions()
+account_snapshot = DataEngine.load_account_snapshot()
 sync_status = DataEngine.load_sync_status()
 
-section("Live Status")
-
-if sync_status.empty:
-    stat_row([
-        {
-            "label": "MT5 Sync",
-            "value": "Offline",
-            "helper": "Desktop agent not connected",
-            "status": "warning",
-        },
-        {
-            "label": "Open Positions",
-            "value": len(open_positions),
-            "helper": "Live positions",
-            "status": "neutral",
-        },
-    ])
-else:
-    status = sync_status.iloc[0]
-
-    stat_row([
-        {
-            "label": "MT5 Sync",
-            "value": status.get("status", "unknown"),
-            "helper": status.get("message", ""),
-            "status": "positive" if status.get("status") == "connected" else "warning",
-        },
-        {
-            "label": "Last Sync",
-            "value": status.get("last_sync", "-"),
-            "helper": "Desktop agent",
-            "status": "neutral",
-        },
-    ])
-
-if not account_snapshot.empty:
-    account = account_snapshot.iloc[0]
-
-    stat_row([
-        {
-            "label": "Balance",
-            "value": account.get("balance", 0),
-            "helper": "Live account",
-            "status": "neutral",
-        },
-        {
-            "label": "Equity",
-            "value": account.get("equity", 0),
-            "helper": "Live equity",
-            "status": "positive" if account.get("equity", 0) >= account.get("balance", 0) else "negative",
-        },
-        {
-            "label": "Floating P/L",
-            "value": account.get("profit", 0),
-            "helper": "Open positions",
-            "status": "positive" if account.get("profit", 0) >= 0 else "negative",
-        },
-    ])
-
 if trades is None or trades.empty:
-    command_card(
-        "No trades found",
-        "Import trades or run MT5 Sync to activate your dashboard.",
-        "Go to Import or run sync agent."
-    )
+    st.warning("No trades loaded yet.")
     st.stop()
 
 stats = StatisticsEngine.summary(trades)
-health_score = HealthEngine.score(trades)
-health_grade = HealthEngine.grade(health_score)
+advanced = AdvancedMetricsEngine.summary(trades)
 
-section("Performance Snapshot")
+balance = 0
+equity = 0
+floating_pl = 0
 
-stat_row([
-    {
-        "label": "Net Profit",
-        "value": stats["net_profit"],
-        "helper": "Total closed result",
-        "status": "positive" if stats["net_profit"] >= 0 else "negative",
-    },
-    {
-        "label": "Win Rate",
-        "value": f"{stats['win_rate']}%",
-        "helper": f"{stats['wins']} wins / {stats['total_trades']} trades",
-        "status": "positive" if stats["win_rate"] >= 50 else "negative",
-    },
-    {
-        "label": "Profit Factor",
-        "value": stats["profit_factor"],
-        "helper": "Gross profit / gross loss",
-        "status": "positive" if stats["profit_factor"] >= 1 else "negative",
-    },
-    {
-        "label": "Trading Health",
-        "value": health_score,
-        "helper": f"Grade {health_grade}",
-        "status": "positive" if health_score >= 75 else "warning",
-    },
-])
-
-section("Performance Overview")
-
-monthly = AnalyticsEngine.monthly_summary(trades)
-
-left, right = st.columns([1.4, 1])
-
-with left:
-    if not monthly.empty:
-        st.line_chart(
-            monthly.set_index("Month")["NetProfit"]
-        )
-    else:
-        st.info("Monthly performance will appear once trade dates are available.")
-
-with right:
-    if reviews is not None and not reviews.empty:
-        merged = trades.merge(
-            reviews,
-            left_on=["ticket", "account_number"],
-            right_on=["trade_ticket", "account_number"],
-            how="inner"
-        )
-
-        edge_scores = []
-
-        for _, row in merged.iterrows():
-            data = row.to_dict()
-            edge_scores.append(EdgeScoreEngine.calculate(data, data))
-
-        if edge_scores:
-            avg_edge = round(sum(edge_scores) / len(edge_scores), 1)
-            trade_quality_card(
-                int(avg_edge),
-                f"{len(edge_scores)} reviewed trades"
-            )
-        else:
-            command_card("Edge Score", "No reviewed trades yet.", "Complete Trade Review.")
-    else:
-        command_card("Edge Score", "No reviewed trades yet.", "Complete Trade Review.")
-
-section("Quick Intelligence")
-
-symbol_summary = AnalyticsEngine.symbol_summary(trades)
-session_summary = AnalyticsEngine.session_summary(trades)
-
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    if not symbol_summary.empty:
-        row = symbol_summary.iloc[0]
-        mini_card("Best Symbol", row["symbol"], f"Net {round(row['NetProfit'], 2)}", "positive", "🏆")
-
-with col2:
-    if not symbol_summary.empty:
-        row = symbol_summary.iloc[-1]
-        mini_card("Worst Symbol", row["symbol"], f"Net {round(row['NetProfit'], 2)}", "negative", "⚠️")
-
-with col3:
-    if not session_summary.empty:
-        row = session_summary.iloc[0]
-        mini_card("Best Session", row["session"], f"Net {round(row['NetProfit'], 2)}", "positive", "☀️")
-
-with col4:
-    if not session_summary.empty:
-        row = session_summary.iloc[-1]
-        mini_card("Worst Session", row["session"], f"Net {round(row['NetProfit'], 2)}", "negative", "🌙")
-
-section("Open Positions")
-
-if open_positions.empty:
-    command_card(
-        "No open positions",
-        "Open positions will appear here once MT5 Sync is running.",
-        "Live monitoring."
-    )
+if account_snapshot is not None and not account_snapshot.empty:
+    account = account_snapshot.iloc[0]
+    balance = account.get("balance", 0) or 0
+    equity = account.get("equity", 0) or 0
+    floating_pl = account.get("profit", 0) or 0
 else:
-    table_header(
-        "Open Positions",
-        f"{len(open_positions)} active positions"
+    balance = trades.iloc[0].get("balance", 0) if "balance" in trades.columns else 0
+    equity = balance
+
+k1, k2, k3, k4, k5, k6 = st.columns(6)
+
+with k1:
+    DashboardV3.kpi(
+        "Balance",
+        FormatEngine.currency(balance),
+        "Demo / live account",
+        "green"
     )
 
-    st.dataframe(
-        open_positions,
-        use_container_width=True,
-        hide_index=True
+with k2:
+    DashboardV3.kpi(
+        "Equity",
+        FormatEngine.currency(equity),
+        "Live equity",
+        "green" if equity >= balance else "red"
     )
 
-section("Recent Trades")
+with k3:
+    DashboardV3.kpi(
+        "Win Rate",
+        f"{stats['win_rate']}%",
+        f"{stats['wins']} wins",
+        "green" if stats["win_rate"] >= 50 else "red"
+    )
 
-recent_cols = [
-    col for col in [
-        "ticket",
-        "trade_date",
-        "symbol",
-        "direction",
-        "net_profit",
-        "session",
-    ]
-    if col in trades.columns
-]
+with k4:
+    DashboardV3.kpi(
+        "Profit Factor",
+        stats["profit_factor"],
+        "Gross profit / loss",
+        "green" if stats["profit_factor"] >= 1 else "red"
+    )
 
-table_header(
-    "Recent Trades",
-    "Your latest trading activity."
-)
+with k5:
+    DashboardV3.kpi(
+        "Floating P/L",
+        FormatEngine.signed_currency(floating_pl),
+        "Open positions",
+        FormatEngine.result_status(floating_pl)
+    )
 
-st.dataframe(
-    trades[recent_cols].head(12),
-    use_container_width=True,
-    hide_index=True
-)
+with k6:
+    DashboardV3.kpi(
+        "Expectancy",
+        FormatEngine.signed_currency(stats["average_trade"]),
+        "Average trade",
+        FormatEngine.result_status(stats["average_trade"])
+    )
+
+main_col, side_col = st.columns([4, 1.15])
+
+with main_col:
+    chart1, chart2, chart3 = st.columns([1.6, 1.4, 1.3])
+
+    with chart1:
+        with st.container(border=True):
+            DashboardV3.panel("Equity Curve")
+
+            curve = trades.copy()
+            curve["trade_date"] = pd.to_datetime(curve["trade_date"], errors="coerce")
+            curve = curve.dropna(subset=["trade_date"]).sort_values("trade_date")
+            curve["equity_curve"] = curve["net_profit"].cumsum()
+
+            st.line_chart(
+                curve.set_index("trade_date")["equity_curve"],
+                height=260
+            )
+
+    with chart2:
+        with st.container(border=True):
+            DashboardV3.panel("Monthly Performance")
+
+            monthly = AnalyticsEngine.monthly_summary(trades)
+
+            if not monthly.empty:
+                st.bar_chart(
+                    monthly.set_index("Month")["NetProfit"],
+                    height=260
+                )
+            else:
+                st.info("No monthly data.")
+
+    with chart3:
+        with st.container(border=True):
+            DashboardV3.panel("Session Analysis")
+
+            session = AnalyticsEngine.session_summary(trades)
+
+            if not session.empty:
+                st.dataframe(
+                    session[["session", "Trades", "NetProfit", "WinRate"]],
+                    use_container_width=True,
+                    hide_index=True,
+                    height=260
+                )
+            else:
+                st.info("No session data.")
+
+    d1, d2 = st.columns([1.5, 1])
+
+    with d1:
+        with st.container(border=True):
+            DashboardV3.panel("Drawdown")
+
+            dd = curve.copy()
+            dd["peak"] = dd["equity_curve"].cummax()
+            dd["drawdown"] = dd["equity_curve"] - dd["peak"]
+
+            st.line_chart(
+                dd.set_index("trade_date")["drawdown"],
+                height=230
+            )
+
+    with d2:
+        with st.container(border=True):
+            DashboardV3.panel("Performance Summary")
+
+            st.metric("Total Trades", stats["total_trades"])
+            st.metric("Winning Trades", stats["wins"])
+            st.metric("Losing Trades", stats["losses"])
+            st.metric("Gross Profit", FormatEngine.currency(stats["gross_profit"]))
+            st.metric("Gross Loss", FormatEngine.currency(stats["gross_loss"]))
+            st.metric("Net Profit", FormatEngine.signed_currency(stats["net_profit"]))
+
+    b1, b2, b3, b4 = st.columns(4)
+
+    with b1:
+        with st.container(border=True):
+            DashboardV3.panel("Recent Trades")
+            TradeTable.render(trades.head(6), height=260)
+
+    with b2:
+        with st.container(border=True):
+            DashboardV3.panel("Recent Reviews")
+
+            if reviews is not None and not reviews.empty:
+                st.dataframe(
+                    reviews.head(6),
+                    use_container_width=True,
+                    hide_index=True,
+                    height=260
+                )
+            else:
+                st.info("No reviews yet.")
+
+    with b3:
+        with st.container(border=True):
+            DashboardV3.panel("Open Positions")
+
+            if open_positions is not None and not open_positions.empty:
+                st.dataframe(
+                    open_positions,
+                    use_container_width=True,
+                    hide_index=True,
+                    height=260
+                )
+            else:
+                st.info("No open positions.")
+
+    with b4:
+        with st.container(border=True):
+            DashboardV3.panel("Automation Status")
+
+            if sync_status is not None and not sync_status.empty:
+                st.dataframe(
+                    sync_status,
+                    use_container_width=True,
+                    hide_index=True,
+                    height=260
+                )
+            else:
+                st.info("Desktop sync offline.")
+
+with side_col:
+    DashboardV3.side_card(
+        "Today's Goal",
+        "<h2 style='margin:0;color:#22c55e;'>67%</h2><p>$200 / $300 target</p>",
+        "Daily performance goal"
+    )
+
+    DashboardV3.side_card(
+        "AI Insight",
+        "You perform best during the London session. Focus on high momentum setups.",
+        "Based on trade history"
+    )
+
+    DashboardV3.side_card(
+        "Best Strategy",
+        f"{advanced['largest_symbol']} is currently your strongest performer.",
+        "Strategy builder coming next"
+    )
+
+    DashboardV3.side_card(
+        "Top Mistake",
+        "Review losing streaks and fast re-entries.",
+        "Use Review Centre"
+    )
+
+    DashboardV3.side_card(
+        "Risk Meter",
+        "LOW RISK",
+        "Margin and drawdown monitor"
+    )
