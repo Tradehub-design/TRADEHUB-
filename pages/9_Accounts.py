@@ -4,14 +4,16 @@ from core.ui import load_css, app_header, section
 from core.components import command_card, stat_row, table_header
 from data.data_engine import DataEngine
 from engine.statistics_engine import StatisticsEngine
-from engine.analytics_engine import AnalyticsEngine
+from engine.account_type_engine import AccountTypeEngine
+from engine.format_engine import FormatEngine
+from components.trade_table import TradeTable
 
 
 load_css()
 
 app_header(
     "💼 Accounts",
-    "Manage trading accounts and review account-level performance."
+    "Review account-level performance and live MT5 account status."
 )
 
 trades = DataEngine.load_trades()
@@ -22,112 +24,51 @@ section("Live Account")
 
 if account_snapshot.empty:
     command_card(
-        "No live account data",
-        "Run the MT5 Sync Agent on your Windows computer to activate live account tracking.",
-        "For now, this page uses imported trade history."
+        "No live account connected",
+        "Run the MT5 Sync Agent to activate balance, equity and open-position tracking.",
+        "Demo dataset is still available."
     )
 else:
     account = account_snapshot.iloc[0]
 
     stat_row([
-        {
-            "label": "Balance",
-            "value": account.get("balance", 0),
-            "helper": account.get("broker", "Broker"),
-            "status": "neutral",
-        },
-        {
-            "label": "Equity",
-            "value": account.get("equity", 0),
-            "helper": account.get("currency", ""),
-            "status": "positive" if account.get("equity", 0) >= account.get("balance", 0) else "negative",
-        },
-        {
-            "label": "Floating P/L",
-            "value": account.get("profit", 0),
-            "helper": "Open positions",
-            "status": "positive" if account.get("profit", 0) >= 0 else "negative",
-        },
+        {"label": "Balance", "value": account.get("balance", 0), "helper": "Live account", "status": "neutral"},
+        {"label": "Equity", "value": account.get("equity", 0), "helper": "Live equity", "status": "positive" if account.get("equity", 0) >= account.get("balance", 0) else "negative"},
+        {"label": "Floating P/L", "value": account.get("profit", 0), "helper": "Open positions", "status": "positive" if account.get("profit", 0) >= 0 else "negative"},
     ])
 
-    stat_row([
-        {
-            "label": "Margin",
-            "value": account.get("margin", 0),
-            "helper": "Used margin",
-            "status": "neutral",
-        },
-        {
-            "label": "Free Margin",
-            "value": account.get("free_margin", 0),
-            "helper": "Available",
-            "status": "positive",
-        },
-        {
-            "label": "Margin Level",
-            "value": account.get("margin_level", 0),
-            "helper": "Account safety",
-            "status": "positive",
-        },
-    ])
-
-section("Imported Performance")
+section("Account Performance")
 
 if trades is None or trades.empty:
-    command_card(
-        "No imported trades",
-        "Import trades or run MT5 Sync to activate account analytics.",
-        "Waiting for data."
-    )
-else:
-    stats = StatisticsEngine.summary(trades)
+    command_card("No trades found", "Import trades first.", "Waiting for data.")
+    st.stop()
 
-    stat_row([
-        {
-            "label": "Net Profit",
-            "value": stats["net_profit"],
-            "helper": "Closed result",
-            "status": "positive" if stats["net_profit"] >= 0 else "negative",
-        },
-        {
-            "label": "Win Rate",
-            "value": f"{stats['win_rate']}%",
-            "helper": "Winning percentage",
-            "status": "positive" if stats["win_rate"] >= 50 else "negative",
-        },
-        {
-            "label": "Total Trades",
-            "value": stats["total_trades"],
-            "helper": "Imported trades",
-            "status": "neutral",
-        },
-    ])
+trades = trades.copy()
+trades["account_type"] = trades["account_number"].apply(AccountTypeEngine.classify)
 
-    monthly = AnalyticsEngine.monthly_summary(trades)
+account_type = st.selectbox("Account Type", AccountTypeEngine.options())
 
-    if not monthly.empty:
-        section("Monthly Performance")
+filtered = trades.copy()
 
-        st.line_chart(
-            monthly.set_index("Month")["NetProfit"]
-        )
+if account_type != "All":
+    filtered = filtered[filtered["account_type"] == account_type]
+
+stats = StatisticsEngine.summary(filtered)
+
+stat_row([
+    {"label": "Trades", "value": stats["total_trades"], "helper": account_type, "status": "neutral"},
+    {"label": "Net Profit", "value": FormatEngine.signed_currency(stats["net_profit"]), "helper": "Closed result", "status": FormatEngine.result_status(stats["net_profit"])},
+    {"label": "Win Rate", "value": f"{stats['win_rate']}%", "helper": "Wins", "status": "positive" if stats["win_rate"] >= 50 else "negative"},
+])
 
 section("Open Positions")
 
 if open_positions.empty:
-    command_card(
-        "No open positions",
-        "Open positions will appear here once MT5 Sync is running.",
-        "Live trading data."
-    )
+    command_card("No open positions", "Open trades will appear after MT5 Sync runs.", "Live monitoring.")
 else:
-    table_header(
-        "Open Positions",
-        f"{len(open_positions)} active positions"
-    )
+    table_header("Open Positions", f"{len(open_positions)} active positions")
+    st.dataframe(open_positions, use_container_width=True, hide_index=True)
 
-    st.dataframe(
-        open_positions,
-        use_container_width=True,
-        hide_index=True
-    )
+section("Account Trades")
+
+TradeTable.render(filtered, height=520)
