@@ -1,26 +1,26 @@
 import streamlit as st
 
-from v2.navigation import V2Navigation
 from v2.style import V2Style
-from v2.ui import V2UI
+from v2.shell import TradeHubShell
+from v2.workspaces.dashboard import DashboardWorkspace
+from v2.workspaces.trade_review import TradeReviewWorkspace
+from v2.workspaces.analytics import AnalyticsWorkspace
+from v2.workspaces.strategy_builder import StrategyBuilderWorkspace
+from v2.workspaces.research_ai import ResearchAIWorkspace
+from v2.workspaces.automation import AutomationWorkspace
+from v2.workspaces.settings import SettingsWorkspace
 
 
 st.set_page_config(
-    page_title="TradeHub V2",
+    page_title="TradeHub",
     page_icon="📈",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 V2Style.load()
 
-selected = V2Navigation.sidebar()
+workspace = TradeHubShell.sidebar()
 
-V2UI.header(
-    selected,
-    "TradeHub V2 workspace"
-)
-
-st.info(
-    "V2 navigation is active. Next step: build the Dashboard workspace."
-)
+if workspace == "Dashboard":
+   
