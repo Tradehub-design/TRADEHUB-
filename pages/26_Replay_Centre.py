@@ -3,7 +3,6 @@ import streamlit as st
 from core.ui import load_css, app_header, section
 from core.components import command_card, stat_row, table_header
 from data.data_engine import DataEngine
-from engine.statistics_engine import StatisticsEngine
 from engine.screenshot_link_engine import ScreenshotLinkEngine
 from components.screenshot_timeline import ScreenshotTimeline
 
@@ -54,16 +53,21 @@ linked_screenshots = ScreenshotLinkEngine.screenshots_for_trade(
 
 review = None
 
- if reviews is not None and not reviews.empty:
-    matched_reviews = reviews[
-        (reviews["trade_ticket"].astype(str) == str(ticket))
-        & (reviews["account_number"].astype(str) == str(account_number))
-    ] if "trade_ticket" in reviews.columns and "account_number" in reviews.columns else reviews.iloc[0:0]
+if reviews is not None and not reviews.empty:
+    if "trade_ticket" in reviews.columns and "account_number" in reviews.columns:
+        matched_reviews = reviews[
+            (reviews["trade_ticket"].astype(str) == str(ticket))
+            & (reviews["account_number"].astype(str) == str(account_number))
+        ]
+    else:
+        matched_reviews = reviews.iloc[0:0]
 
     if not matched_reviews.empty:
         review = matched_reviews.iloc[0].to_dict()
 
 section("Trade Snapshot")
+
+net_profit = selected_trade.get("net_profit", 0) or 0
 
 stat_row([
     {
@@ -80,9 +84,9 @@ stat_row([
     },
     {
         "label": "Net Profit",
-        "value": selected_trade.get("net_profit", 0),
+        "value": net_profit,
         "helper": "Closed result",
-        "status": "positive" if selected_trade.get("net_profit", 0) >= 0 else "negative",
+        "status": "positive" if net_profit >= 0 else "negative",
     },
     {
         "label": "Screenshots",
