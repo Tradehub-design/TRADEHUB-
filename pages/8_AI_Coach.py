@@ -5,33 +5,28 @@ from core.ui import load_css, app_header, section
 from core.components import command_card, stat_row
 from data.data_engine import DataEngine
 from core.ai_coach_engine import AICoachEngine
+from engine.habit_engine import HabitEngine
 
 
 load_css()
 
 app_header(
     "🤖 AI Coach",
-    "Rule-based coaching from your trades, journal reviews and discipline data."
+    "Personal coaching based on your trades, reviews and habits."
 )
 
 trades = DataEngine.load_trades()
 reviews = DataEngine.load_reviews()
 
 if trades is None or trades.empty:
-    command_card(
-        "No trades found",
-        "Import trades first so your coach can analyse your performance.",
-        "The more data you add, the smarter this becomes."
-    )
+    command_card("No trades found", "Import trades first.", "Waiting for data.")
     st.stop()
 
 if reviews is None:
     reviews = pd.DataFrame()
 
-summary = AICoachEngine.generate_summary(
-    trades,
-    reviews
-)
+summary = AICoachEngine.generate_summary(trades, reviews)
+habits = HabitEngine.detect(trades, reviews)
 
 section("Coach Summary")
 
@@ -44,65 +39,24 @@ command_card(
 section("Performance Diagnosis")
 
 stat_row([
-    {
-        "label": "Best Symbol",
-        "value": summary["best_symbol"],
-        "helper": "Highest net profit",
-        "status": "positive",
-    },
-    {
-        "label": "Worst Symbol",
-        "value": summary["worst_symbol"],
-        "helper": "Lowest net profit",
-        "status": "negative",
-    },
-    {
-        "label": "Discipline Score",
-        "value": f"{summary['discipline_score']}%",
-        "helper": "Average journal score",
-        "status": "positive" if summary["discipline_score"] >= 80 else "warning",
-    },
+    {"label": "Best Symbol", "value": summary["best_symbol"], "helper": "Highest profit", "status": "positive"},
+    {"label": "Worst Symbol", "value": summary["worst_symbol"], "helper": "Lowest profit", "status": "negative"},
+    {"label": "Best Session", "value": summary["best_session"], "helper": "Best window", "status": "positive"},
+    {"label": "Worst Session", "value": summary["worst_session"], "helper": "Weakest window", "status": "negative"},
 ])
 
-stat_row([
-    {
-        "label": "Best Session",
-        "value": summary["best_session"],
-        "helper": "Highest net profit",
-        "status": "positive",
-    },
-    {
-        "label": "Worst Session",
-        "value": summary["worst_session"],
-        "helper": "Lowest net profit",
-        "status": "negative",
-    },
-    {
-        "label": "Most Common Mistake",
-        "value": summary["most_common_mistake"],
-        "helper": "From reviews",
-        "status": "negative",
-    },
-])
+section("Detected Habits")
 
-section("Coach Notes")
-
-command_card(
-    "What TradeHub Sees",
-    "Your current coaching summary is based on imported trades and completed trade reviews. Complete more reviews to improve the quality of the feedback.",
-    "Screenshot and AI chart review will be connected later."
-)
+for habit in habits:
+    command_card("Habit Detected", habit, "Rule-based coaching")
 
 section("Ask TradeHub")
 
-question = st.text_area(
-    "Question",
-    placeholder="Example: What am I doing wrong? Which symbol should I avoid?"
-)
+question = st.text_area("Question", placeholder="Example: What should I focus on next?")
 
 if st.button("Analyse"):
     command_card(
-        "AI Coach Response",
-        "Full AI analysis will be connected later. For now, use the diagnosis above as your coaching summary.",
-        "Next stage will use your journal, playbooks and screenshots together."
+        "Coach Response",
+        "Your current focus should be reducing repeated mistakes and prioritising your strongest symbol/session combinations.",
+        "Full AI model connection later."
     )
