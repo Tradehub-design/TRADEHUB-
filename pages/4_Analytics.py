@@ -5,14 +5,15 @@ from core.components import stat_row, command_card, table_header, mini_card
 from data.data_engine import DataEngine
 from engine.statistics_engine import StatisticsEngine
 from engine.analytics_engine import AnalyticsEngine
-from engine.health_engine import HealthEngine
+from engine.advanced_metrics_engine import AdvancedMetricsEngine
+from engine.format_engine import FormatEngine
 
 
 load_css()
 
 app_header(
     "📊 Analytics Pro",
-    "Study performance by symbol, session, month and trading health."
+    "Deep performance analytics using your real trade history."
 )
 
 trades = DataEngine.load_trades()
@@ -20,23 +21,22 @@ trades = DataEngine.load_trades()
 if trades is None or trades.empty:
     command_card(
         "No trades found",
-        "Import trades before using Analytics Pro.",
-        "Go to Import."
+        "Import trades before using analytics.",
+        "Waiting for trade data."
     )
     st.stop()
 
 stats = StatisticsEngine.summary(trades)
-health_score = HealthEngine.score(trades)
-health_grade = HealthEngine.grade(health_score)
+advanced = AdvancedMetricsEngine.summary(trades)
 
-section("Account Performance")
+section("Performance Summary")
 
 stat_row([
     {
         "label": "Net Profit",
-        "value": stats["net_profit"],
+        "value": FormatEngine.signed_currency(stats["net_profit"]),
         "helper": "Total closed result",
-        "status": "positive" if stats["net_profit"] >= 0 else "negative",
+        "status": FormatEngine.result_status(stats["net_profit"]),
     },
     {
         "label": "Win Rate",
@@ -47,40 +47,42 @@ stat_row([
     {
         "label": "Profit Factor",
         "value": stats["profit_factor"],
-        "helper": "Gross profit / gross loss",
+        "helper": "Gross profit / loss",
         "status": "positive" if stats["profit_factor"] >= 1 else "negative",
     },
     {
-        "label": "Trading Health",
-        "value": health_score,
-        "helper": f"Grade {health_grade}",
-        "status": "positive" if health_score >= 75 else "warning",
+        "label": "Average Trade",
+        "value": FormatEngine.signed_currency(stats["average_trade"]),
+        "helper": "Expectancy style result",
+        "status": FormatEngine.result_status(stats["average_trade"]),
     },
 ])
 
+section("Advanced Metrics")
+
 stat_row([
     {
-        "label": "Average Trade",
-        "value": stats["average_trade"],
-        "helper": "Average closed result",
-        "status": "positive" if stats["average_trade"] >= 0 else "negative",
-    },
-    {
-        "label": "Average Win",
-        "value": stats["average_win"],
-        "helper": "Average winning trade",
+        "label": "Best Trade",
+        "value": FormatEngine.signed_currency(advanced["best_trade"]),
+        "helper": "Largest single win",
         "status": "positive",
     },
     {
-        "label": "Average Loss",
-        "value": stats["average_loss"],
-        "helper": "Average losing trade",
+        "label": "Worst Trade",
+        "value": FormatEngine.signed_currency(advanced["worst_trade"]),
+        "helper": "Largest single loss",
         "status": "negative",
     },
     {
-        "label": "Total Trades",
-        "value": stats["total_trades"],
-        "helper": "Imported trades",
+        "label": "Avg Hold",
+        "value": f"{advanced['average_hold_minutes']}m",
+        "helper": "Average holding time",
+        "status": "neutral",
+    },
+    {
+        "label": "Most Traded",
+        "value": advanced["most_traded_symbol"],
+        "helper": "Highest trade count",
         "status": "neutral",
     },
 ])
@@ -91,9 +93,9 @@ monthly = AnalyticsEngine.monthly_summary(trades)
 
 if monthly.empty:
     command_card(
-        "No monthly performance yet",
-        "Monthly analytics will appear once trade dates are available.",
-        "Check your import date field."
+        "No monthly data",
+        "Monthly performance requires valid trade dates.",
+        "Check import mapping."
     )
 else:
     st.line_chart(
@@ -101,8 +103,8 @@ else:
     )
 
     table_header(
-        "Monthly Results",
-        "Performance grouped by calendar month."
+        "Monthly Performance",
+        "Grouped by month"
     )
 
     st.dataframe(
@@ -111,73 +113,47 @@ else:
         hide_index=True
     )
 
-section("Performance Intelligence")
+section("Symbol Intelligence")
 
 symbol_summary = AnalyticsEngine.symbol_summary(trades)
-session_summary = AnalyticsEngine.session_summary(trades)
-
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    if not symbol_summary.empty:
-        row = symbol_summary.iloc[0]
-        mini_card(
-            "Best Symbol",
-            row["symbol"],
-            f"Net {round(row['NetProfit'], 2)}",
-            "positive",
-            "🏆"
-        )
-    else:
-        mini_card("Best Symbol", "N/A", "Insufficient data", "neutral", "🏆")
-
-with col2:
-    if not symbol_summary.empty:
-        row = symbol_summary.iloc[-1]
-        mini_card(
-            "Worst Symbol",
-            row["symbol"],
-            f"Net {round(row['NetProfit'], 2)}",
-            "negative",
-            "⚠️"
-        )
-    else:
-        mini_card("Worst Symbol", "N/A", "Insufficient data", "neutral", "⚠️")
-
-with col3:
-    if not session_summary.empty:
-        row = session_summary.iloc[0]
-        mini_card(
-            "Best Session",
-            row["session"],
-            f"Net {round(row['NetProfit'], 2)}",
-            "positive",
-            "☀️"
-        )
-    else:
-        mini_card("Best Session", "N/A", "Insufficient data", "neutral", "☀️")
-
-with col4:
-    if not session_summary.empty:
-        row = session_summary.iloc[-1]
-        mini_card(
-            "Worst Session",
-            row["session"],
-            f"Net {round(row['NetProfit'], 2)}",
-            "negative",
-            "🌙"
-        )
-    else:
-        mini_card("Worst Session", "N/A", "Insufficient data", "neutral", "🌙")
-
-section("Symbol Leaderboard")
 
 if symbol_summary.empty:
     st.info("No symbol data available.")
 else:
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        best = symbol_summary.iloc[0]
+        mini_card(
+            "Best Symbol",
+            best["symbol"],
+            FormatEngine.signed_currency(best["NetProfit"]),
+            "positive",
+            "🏆"
+        )
+
+    with col2:
+        worst = symbol_summary.iloc[-1]
+        mini_card(
+            "Worst Symbol",
+            worst["symbol"],
+            FormatEngine.signed_currency(worst["NetProfit"]),
+            "negative",
+            "⚠️"
+        )
+
+    with col3:
+        mini_card(
+            "Largest Symbol",
+            advanced["largest_symbol"],
+            "Highest total profit",
+            "positive",
+            "📈"
+        )
+
     table_header(
-        "Symbols",
-        "Your strongest and weakest traded instruments."
+        "Symbol Leaderboard",
+        "Performance by pair"
     )
 
     st.dataframe(
@@ -186,14 +162,16 @@ else:
         hide_index=True
     )
 
-section("Session Leaderboard")
+section("Session Intelligence")
+
+session_summary = AnalyticsEngine.session_summary(trades)
 
 if session_summary.empty:
     st.info("No session data available.")
 else:
     table_header(
-        "Sessions",
-        "Your performance by trading session."
+        "Session Leaderboard",
+        "Performance by trading session"
     )
 
     st.dataframe(
