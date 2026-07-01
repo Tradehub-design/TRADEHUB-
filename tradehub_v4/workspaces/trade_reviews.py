@@ -5,6 +5,7 @@ from engine.format_engine import FormatEngine
 from tradehub_v4.core.state import AppState
 from tradehub_v4.core.ui import UI
 from tradehub_v4.services.trade_math import prepare_trades, daily_summary
+from tradehub_v4.core.calendar_ui import CalendarUI
 
 
 class TradeReviewsWorkspace:
@@ -18,15 +19,23 @@ class TradeReviewsWorkspace:
             st.warning("No trades found.")
             return
 
-        UI.section("Trading Calendar")
-        daily = daily_summary(trades)
-        if daily.empty:
-            selected_trades = trades
-            st.info("No calendar data.")
+        V4UI.section("Trading Calendar")
+
+        selected_month = CalendarUI.month_selector(trades)
+
+        if selected_month:
+            month_trades = CalendarUI.render_month(trades, selected_month)
         else:
-            st.dataframe(daily, use_container_width=True, hide_index=True, height=260)
-            selected_day = st.selectbox("Select trading day", daily["date"].astype(str).tolist())
-            selected_trades = trades[trades["date"].astype(str) == selected_day]
+            month_trades = trades
+
+        selected_day = st.selectbox(
+            "Select trading day",
+            sorted(month_trades["date"].astype(str).unique().tolist(), reverse=True)
+        )
+
+        selected_trades = month_trades[
+            month_trades["date"].astype(str) == selected_day
+        ]
 
         stats = StatisticsEngine.summary(selected_trades)
         c1, c2, c3, c4, c5 = st.columns(5)
