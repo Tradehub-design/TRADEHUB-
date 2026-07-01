@@ -1,147 +1,80 @@
-import calendar
-import pandas as pd
 import streamlit as st
+import pandas as pd
 
 
 class CalendarUI:
 
     @staticmethod
-    def month_selector(trades):
+    def render(trades):
+        st.caption("Calendar summary by trading day")
+
+        if trades is None or trades.empty:
+            st.info("No trades available for calendar.")
+            return
+
         df = trades.copy()
-        df["trade_date"] = pd.to_datetime(df["trade_date"], errors="coerce")
-        df = df.dropna(subset=["trade_date"])
 
-        months = sorted(df["trade_date"].dt.strftime("%Y-%m").unique().tolist())
+        if "date" not in df.columns:
+            if "open_time" in df.columns:
+                df["date"] = pd.to_datetime(df["open_time"], errors="coerce").dt.date
+            elif "trade_date" in df.columns:
+                df["date"] = pd.to_datetime(df["trade_date"], errors="coerce").dt.date
+            else:
+                st.warning("No date, open_time, or trade_date column found.")
+                return
 
-        if not months:
-            return None
+        df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.date
+        df = df.dropna(subset=["date"])
 
-        return st.selectbox(
-            "Month",
-            months,
-            index=len(months) - 1
+        pnl_col = None
+        for col in ["net_profit", "profit", "pnl", "Profit"]:
+            if col in df.columns:
+                pnl_col = col
+                break
+
+        if pnl_col:
+            daily = (
+                df.groupby("date")
+                .agg(
+                    trades=("date", "count"),
+                    pnl=(pnl_col, "sum"),
+                )
+                .reset_index()
+                .sort_values("date", ascending=False)
+            )
+
+            daily["pnl"] = daily["pnl"].round(2)
+            daily["result"] = daily["pnl"].apply(
+                lambda x: "Win Day" if x > 0 else "Loss Day" if x < 0 else "Breakeven"
+            )
+        else:
+            daily = (
+                df.groupby("date")
+                .agg(trades=("date", "count"))
+                .reset_index()
+                .sort_values("date", ascending=False)
+            )
+            daily["pnl"] = 0
+            daily["result"] = "No P/L column"
+
+        c1, c2, c3, c4 = st.columns(4)
+
+        total_days = len(daily)
+        total_trades = int(daily["trades"].sum())
+        total_pnl = float(daily["pnl"].sum()) if "pnl" in daily.columns else 0
+        win_days = int((daily["pnl"] > 0).sum()) if "pnl" in daily.columns else 0
+
+        c1.metric("Trading Days", total_days)
+        c2.metric("Total Trades", total_trades)
+        c3.metric("Total P/L", round(total_pnl, 2))
+        c4.metric("Win Days", win_days)
+
+        st.dataframe(
+            daily,
+            width="stretch",
+            hide_index=True,
         )
 
     @staticmethod
-    def render_month(trades, selected_month):
-        df = trades.copy()
-        df["trade_date"] = pd.to_datetime(df["trade_date"], errors="coerce")
-        df = df.dropna(subset=["trade_date"])
-        df["date"] = df["trade_date"].dt.date
-        df["month"] = df["trade_date"].dt.strftime("%Y-%m")
-
-        month_df = df[df["month"] == selected_month]
-
-        year, month = map(int, selected_month.split("-"))
-
-        daily = (
-            month_df.groupby("date")
-            .agg(
-                trades=("ticket", "count"),
-                pnl=("net_profit", "sum"),
-                wins=("net_profit", lambda x: (x > 0).sum()),
-                losses=("net_profit", lambda x: (x < 0).sum()),
-            )
-            .reset_index()
-        )
-
-        daily_lookup = {
-            row["date"]: row.to_dict()
-            for _, row in daily.iterrows()
-        }
-
-        cal = calendar.Calendar(firstweekday=0)
-        weeks = cal.monthdatescalendar(year, month)
-
-        st.markdown(
-            """
-            <style>
-            .calendar-grid {
-                display: grid;
-                grid-template-columns: repeat(7, 1fr);
-                gap: 10px;
-            }
-
-            .calendar-head {
-                color: #94a3b8;
-                font-size: 13px;
-                font-weight: 800;
-                text-align: center;
-                padding: 8px;
-            }
-
-            .calendar-day {
-                min-height: 115px;
-                background: linear-gradient(180deg, #0d1a2b, #07111f);
-                border: 1px solid rgba(148,163,184,.18);
-                border-radius: 16px;
-                padding: 12px;
-            }
-
-            .calendar-muted {
-                opacity: .28;
-            }
-
-            .calendar-date {
-                font-weight: 900;
-                font-size: 16px;
-            }
-
-            .calendar-pnl-green {
-                color: #22c55e;
-                font-weight: 900;
-                margin-top: 10px;
-                font-size: 20px;
-            }
-
-            .calendar-pnl-red {
-                color: #ef4444;
-                font-weight: 900;
-                margin-top: 10px;
-                font-size: 20px;
-            }
-
-            .calendar-small {
-                color: #94a3b8;
-                font-size: 12px;
-                margin-top: 6px;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
-
-        html = "<div class='calendar-grid'>"
-
-        for day_name in ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]:
-            html += f"<div class='calendar-head'>{day_name}</div>"
-
-        for week in weeks:
-            for day in week:
-                info = daily_lookup.get(day)
-                muted = "calendar-muted" if day.month != month else ""
-
-                if info:
-                    pnl = round(info["pnl"], 2)
-                    pnl_class = "calendar-pnl-green" if pnl >= 0 else "calendar-pnl-red"
-                    pnl_text = f"+${pnl:,.2f}" if pnl >= 0 else f"-${abs(pnl):,.2f}"
-
-                    body = f"""
-                    <div class="calendar-date">{day.day}</div>
-                    <div class="{pnl_class}">{pnl_text}</div>
-                    <div class="calendar-small">{int(info["trades"])} trades</div>
-                    <div class="calendar-small">{int(info["wins"])}W / {int(info["losses"])}L</div>
-                    """
-                else:
-                    body = f"""
-                    <div class="calendar-date">{day.day}</div>
-                    <div class="calendar-small">No trades</div>
-                    """
-
-                html += f"<div class='calendar-day {muted}'>{body}</div>"
-
-        html += "</div>"
-
-        st.markdown(html, unsafe_allow_html=True)
-
-        return month_df
+    def show(trades):
+        CalendarUI.render(trades)
